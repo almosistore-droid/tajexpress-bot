@@ -8,9 +8,9 @@ from dotenv import load_dotenv
 # --- Загрузка переменных окружения ---
 load_dotenv()  # автоматически ищет .env в корне проекта
 
-TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+TOKEN = os.getenv("8596817855:AAFQibbgPc-JnGjT5zyBLpR1Bvjd-B8Bupc")
 WEBHOOK_HOST = os.getenv("WEBHOOK_URL")
-DELIVERY_GROUP_ID = int(os.getenv("DELIVERY_GROUP_ID", 0))
+DELIVERY_GROUP_ID = int(os.getenv("-5077729823", 0))
 WEBHOOK_ROUTE = f"/{TOKEN}"
 WEBHOOK_URL = WEBHOOK_HOST + WEBHOOK_ROUTE
 
