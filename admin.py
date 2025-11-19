@@ -7,5 +7,5 @@ db = SQLAlchemy()
 def init_admin(app):
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
     db.init_app(app)
-    admin = Admin(app, name="TAJ-EXPRESS Admin", template_mode='bootstrap3')
+    admin = Admin(app, name="TAJ-EXPRESS Admin")
     # Здесь можно добавлять модели для админки, например: admin.add_view(ModelView(YourModel, db.session))
