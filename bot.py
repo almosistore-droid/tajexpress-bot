@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 # --- Загрузка переменных окружения ---
 load_dotenv()  # автоматически ищет .env в корне проекта
 
-TOKEN = os.getenv("8596817855:AAFQibbgPc-JnGjT5zyBLpR1Bvjd-B8Bupc")
+TOKEN = os.getenv("8596817855:AAEF6g_Y1H_urSjwYT-OE4qv8osGyXTUqw8")
 WEBHOOK_HOST = os.getenv("WEBHOOK_URL")
 DELIVERY_GROUP_ID = int(os.getenv("-5077729823", 0))
 WEBHOOK_ROUTE = f"/{TOKEN}"
