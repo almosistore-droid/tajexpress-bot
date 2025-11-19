@@ -5,3 +5,4 @@ gunicorn==21.2.0
 flask_admin
 SQLAlchemy
 flask_sqlalchemy
+Flask-Admin==1.6.1
