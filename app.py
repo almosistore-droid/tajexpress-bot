@@ -25,7 +25,8 @@ if not WEBHOOK_URL_BASE:
 WEBHOOK_ROUTE = '/' + TOKEN
 WEBHOOK_URL = WEBHOOK_URL_BASE + WEBHOOK_ROUTE
 
-@app.before_first_request
+# --- Установка Webhook при старте ---
+@app.before_serving
 def setup_webhook():
     """Удаление старого и установка нового Webhook"""
     bot.remove_webhook()
