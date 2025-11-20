@@ -76,9 +76,11 @@ def main_handler(message):
     elif text == BTN_DUSHANBE:
         bot.send_message(chat_id, "🇹🇯 Адрес офиса: Душанбе, к Хисор 34\nТелефон: +992 985171732")
     elif text == BTN_BANNED:
-        bot.send_message(chat_id, "🚫 Запрещенные товары:\n1. Оружие\n2. Взрывчатые вещества\n3. Наркотики\n...")
+        bot.send_message(chat_id, "🚫 Запрещенные товары:\n1. Взрывоопасные вещества \n2. Аккумуляторы, батареи, магниты, повербанки \n3. Продукты питания, семена, саженцы\n4. Оружие (в том числе игрушечное), кастеты, ножи \n5. Горюче-смазочные материалы, косметика\n6. Серебро, золото и аналогичные изделия\n7.
+· Игрушки с батарейками\n8. С Часы (включая Apple Watch), наушники и умные\n9.
+гаджеты...\n...")
     elif text == BTN_CONTACTS:
-        bot.send_message(chat_id, "📞 Служба поддержки: +992 985171732\nEmail: support@tajexpress.com\nМенеджер: @TAJEXPRESSMANAGER")
+        bot.send_message(chat_id, "📞 Служба поддержки: +992 985171732\nEmail: \nМенеджер: @TAJEXPRESSMANAGER")
     else:
         send_main_menu(chat_id)
 
