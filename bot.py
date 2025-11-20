@@ -27,7 +27,7 @@ track_codes = {
 }
 
 # --- Администраторы ---
-ADMINS = [1324431208]  # Вставьте сюда id админа
+ADMINS = [123456789]  # Вставьте сюда id админа
 
 # --- Кнопки меню ---
 BTN_DELIVERY = "🚚 Доставка"
@@ -37,6 +37,7 @@ BTN_PRICE_LIST = "📦 Нархнома"
 BTN_TRACK = "🔍 Проверка трек-кода"
 BTN_BANNED = "🚫 Молхои манъшуда"
 BTN_CONTACTS = "📞 Контакты"
+BTN_ADD_TRACK = "➕ Добавить трек-код"  # Новая кнопка для админов
 
 MAIN_MENU = [
     [BTN_DELIVERY, BTN_ADDRESS],
@@ -46,36 +47,40 @@ MAIN_MENU = [
 ]
 
 # --- Главное меню ---
-def send_main_menu(chat_id):
+def send_main_menu(chat_id, is_admin=False):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     for row in MAIN_MENU:
         markup.add(*[types.KeyboardButton(text) for text in row])
+    if is_admin:
+        markup.add(types.KeyboardButton(BTN_ADD_TRACK))
     bot.send_message(chat_id, "Выберите пункт меню:", reply_markup=markup)
 
 # --- Команда /start ---
 @bot.message_handler(commands=["start", "help"])
 def start_handler(message):
-    send_main_menu(message.chat.id)
+    is_admin = message.from_user.id in ADMINS
+    send_main_menu(message.chat.id, is_admin)
 
 # --- Основной обработчик кнопок ---
 @bot.message_handler(func=lambda m: True)
 def main_handler(message):
     chat_id = message.chat.id
     text = message.text
+    is_admin = message.from_user.id in ADMINS
 
     if text == BTN_DELIVERY:
-        msg = bot.send_message(chat_id, "Введите ваше имя для заявки:")
+        msg = bot.send_message(chat_id, "Номи худро ворид кунед:")
         bot.register_next_step_handler(msg, delivery_step_name)
 
     elif text == BTN_ADDRESS:
         msg = bot.send_message(chat_id, "Номи худро ворид кунед (бо ҳарфҳои англисӣ):")
-        bot.register_next_step_handler(msg, address_step_name)  # Проверка английских букв внутри функции
+        bot.register_next_step_handler(msg, address_step_name)
 
     elif text == BTN_PRICE_LIST:
         bot.send_message(chat_id, "📦 Список тарифов:\n1. Малый груз — 2000 руб.\n2. Средний груз — 4000 руб.\n3. Большой груз — 6000 руб.")
 
     elif text == BTN_TRACK:
-        msg = bot.send_message(chat_id, "Введите номер для отслеживания (например, TAJ12345):")
+        msg = bot.send_message(chat_id, "Рақами треккодро равон кунед.:")
         bot.register_next_step_handler(msg, track_step)
 
     elif text == BTN_DUSHANBE:
@@ -96,8 +101,15 @@ def main_handler(message):
     elif text == BTN_CONTACTS:
         bot.send_message(chat_id, "📞 Служба поддержки: +992 985171732\nМенеджер: @TAJEXPRESSMANAGER")
 
+    elif text == BTN_ADD_TRACK:
+        if not is_admin:
+            bot.send_message(chat_id, "❌ Доступ запрещен.")
+        else:
+            msg = bot.send_message(chat_id, "Введите трек-код:")
+            bot.register_next_step_handler(msg, add_track_step)
+
     else:
-        send_main_menu(chat_id)
+        send_main_menu(chat_id, is_admin)
 
 # ==========================
 # --- Доставка ---
@@ -129,7 +141,7 @@ def delivery_step_phone(message):
         bot.send_message(chat_id, "Дархост қабул шуд ✅")
     except ApiTelegramException as e:
         bot.send_message(chat_id, f"Хатогии ирсол: {e}")
-    send_main_menu(chat_id)
+    send_main_menu(chat_id, message.from_user.id in ADMINS)
 
 # ==========================
 # --- Гирифтани адрес ва код ---
@@ -139,11 +151,11 @@ def address_step_name(message):
     name = message.text.strip()
     # Проверка на английские буквы и пробел
     if not re.fullmatch(r"[A-Za-z ]+", name):
-        msg = bot.send_message(chat_id, "Номи худро ворид кунед (бо ҳарфҳои англисӣ)и:")
+        msg = bot.send_message(chat_id, "❌ Пожалуйста, введите имя только латинскими буквами:")
         bot.register_next_step_handler(msg, address_step_name)
         return
     user_data[chat_id] = {"name": name}
-    msg = bot.send_message(chat_id, "Рақами телефони худро ворид кунед:")
+    msg = bot.send_message(chat_id, "Введите ваш телефон (только цифры, латиница допустима):")
     bot.register_next_step_handler(msg, address_step_phone)
 
 def address_step_phone(message):
@@ -155,7 +167,7 @@ def address_step_phone(message):
         f"楼下密码 #58# {data['name']} {data['phone']}"
     )
     bot.send_message(chat_id, full_address)
-    send_main_menu(chat_id)
+    send_main_menu(chat_id, message.from_user.id in ADMINS)
 
 # ==========================
 # --- Проверка трек-кода ---
@@ -165,19 +177,11 @@ def track_step(message):
     code = message.text.strip().upper()
     status = track_codes.get(code, "Трек-код не найден")
     bot.send_message(chat_id, f"Статус груза {code}:\n{status}")
-    send_main_menu(chat_id)
+    send_main_menu(chat_id, message.from_user.id in ADMINS)
 
 # ==========================
 # --- Админ: добавление трек-кодов ---
 # ==========================
-@bot.message_handler(commands=["add_track"])
-def add_track(message):
-    if message.from_user.id not in ADMINS:
-        bot.send_message(message.chat.id, "❌ Доступ запрещен.")
-        return
-    msg = bot.send_message(message.chat.id, "Введите трек-код:")
-    bot.register_next_step_handler(msg, add_track_step)
-
 def add_track_step(message):
     track_code = message.text.strip().upper()
     msg = bot.send_message(message.chat.id, f"Введите статус для {track_code}:")
