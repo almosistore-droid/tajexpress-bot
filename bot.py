@@ -80,8 +80,8 @@ def main_handler(message):
         msg = bot.send_message(chat_id, "Номи худро ворид кунед:")
         bot.register_next_step_handler(msg, delivery_step_name)
     elif text == BTN_ADDRESS:
-        msg = bot.send_message(chat_id, "Номи худро ворид кунед (только английские буквы):")
-        bot.register_next_step_handler(msg, address_step_name)
+    msg = bot.send_message(chat_id, "Номи худро ворид кунед (только английские буквы):")
+    bot.register_next_step_handler(msg, address_step_name)
     elif text == BTN_PRICE_LIST:
         bot.send_message(chat_id, "📦 Список тарифов:\n1. Малый груз — 2000 руб.\n2. Средний груз — 4000 руб.\n3. Большой груз — 6000 руб.")
     elif text == BTN_TRACK:
@@ -142,14 +142,14 @@ def delivery_step_phone(message):
 # -----------------------------
 def address_step_name(message):
     chat_id = message.chat.id
+    # Проверяем, что введено только английскими буквами
     if not message.text.isascii():
-        bot.send_message(chat_id, "Номи худро ворид кунед (ба забони англисӣ:")
-        msg = bot.send_message(chat_id, "Номи худро ворид кунед (ба забони англисӣ):")
+        msg = bot.send_message(chat_id, "❌ Только английские буквы, попробуйте снова.")
         bot.register_next_step_handler(msg, address_step_name)
         return
 
     user_data[chat_id] = {"name": message.text}
-    msg = bot.send_message(chat_id, "Рақами телефони худро ворид кунед):")
+    msg = bot.send_message(chat_id, "Введите ваш телефон (цифры):")
     bot.register_next_step_handler(msg, address_step_phone)
 
 def address_step_phone(message):
@@ -159,7 +159,6 @@ def address_step_phone(message):
     full_address = f"Amin 17590820846 浙江省金华市义乌市 福田三小区80栋二单元305室楼下 #58# {data['name']} {data['phone']}"
     bot.send_message(chat_id, full_address)
     send_main_menu(chat_id)
-
 # -----------------------------
 # Проверка трек-кода
 # -----------------------------
