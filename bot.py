@@ -3,6 +3,7 @@ import telebot
 from telebot import types
 from telebot.apihelper import ApiTelegramException
 from dotenv import load_dotenv
+import re  # Для проверки имени на латиницу
 
 # Загружаем переменные окружения из .env
 load_dotenv()
@@ -67,8 +68,8 @@ def main_handler(message):
         bot.register_next_step_handler(msg, delivery_step_name)
 
     elif text == BTN_ADDRESS:
-        msg = bot.send_message(chat_id, "Введите ваше имя:")
-        bot.register_next_step_handler(msg, address_step_name)
+        msg = bot.send_message(chat_id, "Номи худро ворид кунед (бо ҳарфҳои англисӣ):")
+        bot.register_next_step_handler(msg, address_step_name)  # Проверка английских букв внутри функции
 
     elif text == BTN_PRICE_LIST:
         bot.send_message(chat_id, "📦 Список тарифов:\n1. Малый груз — 2000 руб.\n2. Средний груз — 4000 руб.\n3. Большой груз — 6000 руб.")
@@ -135,8 +136,14 @@ def delivery_step_phone(message):
 # ==========================
 def address_step_name(message):
     chat_id = message.chat.id
-    user_data[chat_id] = {"name": message.text}
-    msg = bot.send_message(chat_id, "Рақами телефони худро ворид кунед (бо ҳарфҳои англисӣ):")
+    name = message.text.strip()
+    # Проверка на английские буквы и пробел
+    if not re.fullmatch(r"[A-Za-z ]+", name):
+        msg = bot.send_message(chat_id, "Номи худро ворид кунед (бо ҳарфҳои англисӣ)и:")
+        bot.register_next_step_handler(msg, address_step_name)
+        return
+    user_data[chat_id] = {"name": name}
+    msg = bot.send_message(chat_id, "Рақами телефони худро ворид кунед:")
     bot.register_next_step_handler(msg, address_step_phone)
 
 def address_step_phone(message):
