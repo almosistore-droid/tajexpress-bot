@@ -27,9 +27,16 @@ def load_track_codes():
             return json.load(f)
     except:
         return {}
-# Администраторы
+
+def save_track_codes(codes):
+    with open(TRACK_FILE, "w") as f:
+        json.dump(codes, f, indent=4)
+
 # -----------------------------
-ADMINS = [1324431208]  # Вставьте сюда ID админа
+# Администраторы (user_id)
+# -----------------------------
+ADMINS = [1324431208]  # <- сюда вставь свои Telegram ID для админов
+
 # -----------------------------
 # Хранилище для пользователей
 # -----------------------------
@@ -61,7 +68,7 @@ def send_main_menu(chat_id):
     for row in MAIN_MENU:
         markup.add(*[types.KeyboardButton(text) for text in row])
 
-    welcome_text3 = (
+    welcome_text = (
         "🚀 TAJEXPRESS – ширкати бехтарин барои фиристодан ва харидҳо!\n\n"
         "📦 Борҳои худро зуд ва бехатар фиристед\n"
         "⏱ Дархостҳоро осон ва зуд иҷро намоед\n"
@@ -69,7 +76,8 @@ def send_main_menu(chat_id):
         "Менюи зерро интихоб кунед ва фавран истифода бурданро оғоз намоед!"
     )
 
-    bot.send_message(chat_id, welcome_text3, reply_markup=markup)
+    bot.send_message(chat_id, welcome_text, reply_markup=markup)
+
 # -----------------------------
 # Команда /start
 # -----------------------------
@@ -91,7 +99,7 @@ def main_handler(message):
         bot.register_next_step_handler(msg, delivery_step_name)
 
     elif text == BTN_ADDRESS:
-        msg = bot.send_message(chat_id, "Номи худро ворид кунед (только английские буквы):")
+        msg = bot.send_message(chat_id, "Номи худро ворид кунед (Танҳо ҳарфҳои англисӣ):")
         bot.register_next_step_handler(msg, address_step_name)
 
     elif text == BTN_PRICE_LIST:
@@ -131,7 +139,6 @@ def main_handler(message):
     else:
         send_main_menu(chat_id)
 
-# -----------------------------
 # -----------------------------
 # Доставка
 # -----------------------------
@@ -186,8 +193,9 @@ def address_step_phone(message):
     full_address = f"Amin 17590820846 浙江省金华市义乌市 福田三小区80栋二单元305室楼下 #58# {data['name']} {data['phone']}"
     bot.send_message(chat_id, full_address)
     send_main_menu(chat_id)
+
 # -----------------------------
-# Проверка трек-кода
+# Проверка трек-кода (доступно всем)
 # -----------------------------
 def track_step(message):
     chat_id = message.chat.id
@@ -196,6 +204,33 @@ def track_step(message):
     status = track_codes.get(code, "Трек-код не найден")
     bot.send_message(chat_id, f"Статус груза {code}:\n{status}")
     send_main_menu(chat_id)
+
+# -----------------------------
+# Админ: добавление трек-кодов через команду /add_track
+# -----------------------------
+@bot.message_handler(commands=["add_track"])
+def add_track(message):
+    if message.from_user.id not in ADMINS:
+        bot.send_message(message.chat.id, "❌ Доступ запрещен.")
+        return
+    msg = bot.send_message(message.chat.id, "Введите трек-код:")
+    bot.register_next_step_handler(msg, add_track_step)
+
+def add_track_step(message):
+    track_code = message.text.strip().upper()
+    msg = bot.send_message(message.chat.id, f"Введите статус для {track_code}:")
+    bot.register_next_step_handler(msg, lambda m: save_track_status(track_code, m))
+
+def save_track_status(track_code, message):
+    track_codes = load_track_codes()
+    track_codes[track_code] = message.text.strip()
+    save_track_codes(track_codes)
+    bot.send_message(message.chat.id, f"✅ Трек-код {track_code} добавлен/обновлен.")
+    # Отправка уведомления в группу
+    try:
+        bot.send_message(DELIVERY_GROUP_ID, f"✅ Трек-код {track_code} добавлен/обновлен.\nСтатус: {track_codes[track_code]}")
+    except:
+        pass
 
 # -----------------------------
 # Запуск бота
