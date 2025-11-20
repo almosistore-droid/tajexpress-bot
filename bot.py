@@ -89,16 +89,26 @@ def main_handler(message):
     if text == BTN_DELIVERY:
         msg = bot.send_message(chat_id, "Номи худро ворид кунед:")
         bot.register_next_step_handler(msg, delivery_step_name)
- elif text == BTN_ADDRESS:
-    msg = bot.send_message(chat_id, "Номи худро ворид кунед (только английские буквы):")
-    bot.register_next_step_handler(msg, address_step_name)
+
+    elif text == BTN_ADDRESS:
+        msg = bot.send_message(chat_id, "Номи худро ворид кунед (только английские буквы):")
+        bot.register_next_step_handler(msg, address_step_name)
+
     elif text == BTN_PRICE_LIST:
-        bot.send_message(chat_id, "📦 Список тарифов:\n1. Малый груз — 2000 руб.\n2. Средний груз — 4000 руб.\n3. Большой груз — 6000 руб.")
+        bot.send_message(chat_id,
+            "📦 Список тарифов:\n"
+            "1. Малый груз — 2000 руб.\n"
+            "2. Средний груз — 4000 руб.\n"
+            "3. Большой груз — 6000 руб."
+        )
+
     elif text == BTN_TRACK:
         msg = bot.send_message(chat_id, "Треккоди худро равон кунед:")
         bot.register_next_step_handler(msg, track_step)
+
     elif text == BTN_DUSHANBE:
         bot.send_message(chat_id, "🇹🇯 Адрес офиса: Душанбе, к Хисор 34\nТелефон: +992 985171732")
+
     elif text == BTN_BANNED:
         bot.send_message(chat_id,
             "🚫 Запрещенные товары:\n"
@@ -110,11 +120,18 @@ def main_handler(message):
             "6. Серебро, золото и аналогичные изделия\n"
             "7. Жидкости, аэрозоли, химические вещества"
         )
+
     elif text == BTN_CONTACTS:
-        bot.send_message(chat_id, "📞 Служба поддержки: +992 985171732\nEmail: support@tajexpress.com\nМенеджер: @TAJEXPRESSMANAGER")
+        bot.send_message(chat_id,
+            "📞 Служба поддержки: +992 985171732\n"
+            "Email: support@tajexpress.com\n"
+            "Менеджер: @TAJEXPRESSMANAGER"
+        )
+
     else:
         send_main_menu(chat_id)
 
+# -----------------------------
 # -----------------------------
 # Доставка
 # -----------------------------
