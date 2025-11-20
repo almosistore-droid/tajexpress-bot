@@ -58,8 +58,16 @@ def send_main_menu(chat_id):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     for row in MAIN_MENU:
         markup.add(*[types.KeyboardButton(text) for text in row])
-    bot.send_message(chat_id, "Выберите пункт меню:", reply_markup=markup)
 
+    welcome_text3 = (
+        "🚀 TAJEXPRESS – ширкати бехтарин барои фиристодан ва харидҳо!\n\n"
+        "📦 Борҳои худро зуд ва бехатар фиристед\n"
+        "⏱ Дархостҳоро осон ва зуд иҷро намоед\n"
+        "🇨🇳 Суроғаи қулай дар Чин барои харидҳои шумо\n\n"
+        "Менюи зерро интихоб кунед ва фавран истифода бурданро оғоз намоед!"
+    )
+
+    bot.send_message(chat_id, welcome_text3, reply_markup=markup)
 # -----------------------------
 # Команда /start
 # -----------------------------
