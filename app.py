@@ -27,16 +27,16 @@ from bot import bot  # assumes bot.py defines `bot` (TeleBot instance)
 app = Flask(__name__)
 app.config["SECRET_KEY"] = FLASK_SECRET
 
+from telebot.types import Update
+
 @app.route(WEBHOOK_ROUTE, methods=["POST"])
 def webhook():
-    # Telegram присылает json
     if request.headers.get("content-type") == "application/json":
         json_string = request.get_data().decode("utf-8")
-        update = bot.types.Update.de_json(json_string)
+        update = Update.de_json(json_string)
         bot.process_new_updates([update])
         return "ok", 200
     return "Not JSON", 403
-
 @app.route("/")
 def index():
     return "TAJ-EXPRESS bot (webhook) is running ✅", 200
