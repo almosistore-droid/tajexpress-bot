@@ -30,7 +30,7 @@ ADMINS = [123456789]  # Вставьте сюда id админа
 
 # --- Кнопки меню ---
 BTN_DELIVERY = "🚚 Доставка"
-BTN_ADDRESS = "🇨🇳 Гирифтани адрес ва код"
+BTN_ADDRESS = "🇨🇳 Гирифтани адрес"
 BTN_DUSHANBE = "🇹🇯 Адрес Душанбе"
 BTN_PRICE_LIST = "📦 Нархнома"
 BTN_TRACK = "🔍 Проверка трек-кода"
@@ -88,13 +88,13 @@ def main_handler(message):
 def delivery_step_name(message):
     chat_id = message.chat.id
     user_data[chat_id] = {"name": message.text}
-    msg = bot.send_message(chat_id, "Введите адрес доставки:")
+    msg = bot.send_message(chat_id, "Суроғаро ворид кунед:")
     bot.register_next_step_handler(msg, delivery_step_address)
 
 def delivery_step_address(message):
     chat_id = message.chat.id
     user_data[chat_id]["address"] = message.text
-    msg = bot.send_message(chat_id, "Введите номер телефона:")
+    msg = bot.send_message(chat_id, "Рақами телефони худро ворид кунед:")
     bot.register_next_step_handler(msg, delivery_step_phone)
 
 def delivery_step_phone(message):
@@ -109,9 +109,9 @@ def delivery_step_phone(message):
     )
     try:
         bot.send_message(DELIVERY_GROUP_ID, delivery_text, parse_mode="Markdown")
-        bot.send_message(chat_id, "Заявка отправлена ✅")
+        bot.send_message(chat_id, "Дархост қабул шуд ✅")
     except ApiTelegramException as e:
-        bot.send_message(chat_id, f"Ошибка отправки: {e}")
+        bot.send_message(chat_id, f"Хатогии ирсол: {e}")
     send_main_menu(chat_id)
 
 # ==========================
@@ -120,7 +120,8 @@ def delivery_step_phone(message):
 def address_step_name(message):
     chat_id = message.chat.id
     user_data[chat_id] = {"name": message.text}
-    msg = bot.send_message(chat_id, "Введите номер телефона:")
+    msg = bot.send_message(chat_id, "
+Рақами телефони худро ворид кунед (бо ҳарфҳои англисӣ):")
     bot.register_next_step_handler(msg, address_step_phone)
 
 def address_step_phone(message):
@@ -128,7 +129,7 @@ def address_step_phone(message):
     user_data[chat_id]["phone"] = message.text
     data = user_data[chat_id]
     # Полный адрес для Китая с именем и телефоном
-    full_address = f"Amin 17590820846 浙江省金华市义乌市 福田三小区80栋二单元305室 {data['name']} {data['phone']}"
+    full_address = f"Amin 17590820846  浙江省金华市义乌市 福田三小区80栋二单元305室楼下密码 #58# {data['name']} {data['phone']}"
     bot.send_message(chat_id, full_address)
     send_main_menu(chat_id)
 
