@@ -65,28 +65,36 @@ def main_handler(message):
     if text == BTN_DELIVERY:
         msg = bot.send_message(chat_id, "Введите ваше имя для заявки:")
         bot.register_next_step_handler(msg, delivery_step_name)
+
     elif text == BTN_ADDRESS:
         msg = bot.send_message(chat_id, "Введите ваше имя:")
         bot.register_next_step_handler(msg, address_step_name)
+
     elif text == BTN_PRICE_LIST:
         bot.send_message(chat_id, "📦 Список тарифов:\n1. Малый груз — 2000 руб.\n2. Средний груз — 4000 руб.\n3. Большой груз — 6000 руб.")
+
     elif text == BTN_TRACK:
         msg = bot.send_message(chat_id, "Введите номер для отслеживания (например, TAJ12345):")
         bot.register_next_step_handler(msg, track_step)
+
     elif text == BTN_DUSHANBE:
         bot.send_message(chat_id, "🇹🇯 Адрес офиса: Душанбе, к Хисор 34\nТелефон: +992 985171732")
+
     elif text == BTN_BANNED:
-        bot.send_message(chat_id, ""🚫 Запрещенные товары:\n"
-    "1. Взрывоопасные вещества\n"
-    "2. Аккумуляторы, батареи, магниты, повербанки\n"
-    "3. Продукты питания, семена, саженцы\n"
-    "4. Оружие (в том числе игрушечное), кастеты, ножи\n"
-    "5. Горюче-смазочные материалы, косметика\n"
-    "6. Серебро, золото и аналогичные изделия\n"
-    "7. Жидкости, аэрозоли, химические вещества"
-)\n...")
+        bot.send_message(chat_id,
+            "🚫 **Запрещенные товары:**\n"
+            "1. Взрывоопасные вещества\n"
+            "2. Аккумуляторы, батареи, магниты, повербанки\n"
+            "3. Продукты питания, семена, саженцы\n"
+            "4. Оружие (в том числе игрушечное), кастеты, ножи\n"
+            "5. Горюче-смазочные материалы, косметика\n"
+            "6. Серебро, золото и аналогичные изделия\n"
+            "7. Жидкости, аэрозоли, химические вещества"
+        )
+
     elif text == BTN_CONTACTS:
-        bot.send_message(chat_id, "📞 Служба поддержки: +992 985171732\nEmail: \nМенеджер: @TAJEXPRESSMANAGER")
+        bot.send_message(chat_id, "📞 Служба поддержки: +992 985171732\nМенеджер: @TAJEXPRESSMANAGER")
+
     else:
         send_main_menu(chat_id)
 
@@ -128,16 +136,17 @@ def delivery_step_phone(message):
 def address_step_name(message):
     chat_id = message.chat.id
     user_data[chat_id] = {"name": message.text}
-    msg = bot.send_message(chat_id, "
-Рақами телефони худро ворид кунед (бо ҳарфҳои англисӣ):")
+    msg = bot.send_message(chat_id, "Рақами телефони худро ворид кунед (бо ҳарфҳои англисӣ):")
     bot.register_next_step_handler(msg, address_step_phone)
 
 def address_step_phone(message):
     chat_id = message.chat.id
     user_data[chat_id]["phone"] = message.text
     data = user_data[chat_id]
-    # Полный адрес для Китая с именем и телефоном
-    full_address = f"Amin 17590820846  浙江省金华市义乌市 福田三小区80栋二单元305室楼下密码 #58# {data['name']} {data['phone']}"
+    full_address = (
+        f"Amin 17590820846 浙江省金华市义乌市 福田三小区80栋二单元305室 "
+        f"楼下密码 #58# {data['name']} {data['phone']}"
+    )
     bot.send_message(chat_id, full_address)
     send_main_menu(chat_id)
 
