@@ -1,10 +1,10 @@
-# bot.py
 import os
 import telebot
 from telebot import types
 from telebot.apihelper import ApiTelegramException
 from dotenv import load_dotenv
 
+# Загружаем переменные окружения из .env
 load_dotenv()
 
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
@@ -18,17 +18,17 @@ try:
 except ValueError:
     DELIVERY_GROUP_ID = 0
 
-# Хранилища данных
+# --- Хранилища данных ---
 user_data = {}
 track_codes = {
     "TAJ12345": "В пути, прибытие 25.11.2025",
     "TAJ54321": "Доставлено, 19.11.2025"
 }
 
-# Админы
-ADMINS = [123456789]  # вставьте сюда id админа
+# --- Администраторы ---
+ADMINS = [123456789]  # Вставьте сюда id админа
 
-# Кнопки меню
+# --- Кнопки меню ---
 BTN_DELIVERY = "🚚 Доставка"
 BTN_ADDRESS = "🇨🇳 Гирифтани адрес ва код"
 BTN_DUSHANBE = "🇹🇯 Адрес Душанбе"
@@ -44,13 +44,14 @@ MAIN_MENU = [
     [BTN_CONTACTS]
 ]
 
+# --- Главное меню ---
 def send_main_menu(chat_id):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     for row in MAIN_MENU:
         markup.add(*[types.KeyboardButton(text) for text in row])
     bot.send_message(chat_id, "Выберите пункт меню:", reply_markup=markup)
 
-# --- /start ---
+# --- Команда /start ---
 @bot.message_handler(commands=["start", "help"])
 def start_handler(message):
     send_main_menu(message.chat.id)
@@ -65,7 +66,8 @@ def main_handler(message):
         msg = bot.send_message(chat_id, "Введите ваше имя для заявки:")
         bot.register_next_step_handler(msg, delivery_step_name)
     elif text == BTN_ADDRESS:
-        bot.send_message(chat_id, "📍 Адрес склада: Душанбе, к Хисор 34")
+        msg = bot.send_message(chat_id, "Введите ваше имя:")
+        bot.register_next_step_handler(msg, address_step_name)
     elif text == BTN_PRICE_LIST:
         bot.send_message(chat_id, "📦 Список тарифов:\n1. Малый груз — 2000 руб.\n2. Средний груз — 4000 руб.\n3. Большой груз — 6000 руб.")
     elif text == BTN_TRACK:
@@ -80,7 +82,9 @@ def main_handler(message):
     else:
         send_main_menu(chat_id)
 
+# ==========================
 # --- Доставка ---
+# ==========================
 def delivery_step_name(message):
     chat_id = message.chat.id
     user_data[chat_id] = {"name": message.text}
@@ -110,7 +114,27 @@ def delivery_step_phone(message):
         bot.send_message(chat_id, f"Ошибка отправки: {e}")
     send_main_menu(chat_id)
 
+# ==========================
+# --- Гирифтани адрес ва код ---
+# ==========================
+def address_step_name(message):
+    chat_id = message.chat.id
+    user_data[chat_id] = {"name": message.text}
+    msg = bot.send_message(chat_id, "Введите номер телефона:")
+    bot.register_next_step_handler(msg, address_step_phone)
+
+def address_step_phone(message):
+    chat_id = message.chat.id
+    user_data[chat_id]["phone"] = message.text
+    data = user_data[chat_id]
+    # Полный адрес для Китая с именем и телефоном
+    full_address = f"Amin 17590820846 浙江省金华市义乌市 福田三小区80栋二单元305室 {data['name']} {data['phone']}"
+    bot.send_message(chat_id, full_address)
+    send_main_menu(chat_id)
+
+# ==========================
 # --- Проверка трек-кода ---
+# ==========================
 def track_step(message):
     chat_id = message.chat.id
     code = message.text.strip().upper()
@@ -118,7 +142,9 @@ def track_step(message):
     bot.send_message(chat_id, f"Статус груза {code}:\n{status}")
     send_main_menu(chat_id)
 
+# ==========================
 # --- Админ: добавление трек-кодов ---
+# ==========================
 @bot.message_handler(commands=["add_track"])
 def add_track(message):
     if message.from_user.id not in ADMINS:
@@ -135,3 +161,10 @@ def add_track_step(message):
 def save_track_status(track_code, message):
     track_codes[track_code] = message.text.strip()
     bot.send_message(message.chat.id, f"✅ Трек-код {track_code} добавлен/обновлен.")
+
+# ==========================
+# --- Запуск бота ---
+# ==========================
+if __name__ == "__main__":
+    print("Бот запущен...")
+    bot.infinity_polling()
