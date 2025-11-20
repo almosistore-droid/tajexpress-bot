@@ -1,34 +1,23 @@
-# app.py
 import os
 from flask import Flask, request
 from dotenv import load_dotenv
-
-# загружаем .env (для локальной разработки)
-load_dotenv()
-
-# Берём токен и URL из окружения (Render / локально через .env)
-TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-WEBHOOK_BASE = os.getenv("WEBHOOK_URL")  # например: https://tajexpress-cargo-bot.onrender.com
-FLASK_SECRET = os.getenv("FLASK_SECRET", "change-me")
-
-if not TOKEN:
-    raise RuntimeError("Ошибка: TELEGRAM_BOT_TOKEN не задан. Установите переменную окружения в Render (или .env для локали).")
-
-if not WEBHOOK_BASE:
-    raise RuntimeError("Ошибка: WEBHOOK_URL не задан. Установите переменную окружения в Render.")
-
-WEBHOOK_ROUTE = f"/{TOKEN}"
-WEBHOOK_URL = WEBHOOK_BASE.rstrip("/") + WEBHOOK_ROUTE
-
-# Импорт бота (bot должен использовать тот же TOKEN)
-# Импорт выполняем после проверки переменных, чтобы избежать ошибок при старте
-from bot import bot  # assumes bot.py defines `bot` (TeleBot instance)
-
-app = Flask(__name__)
-app.config["SECRET_KEY"] = FLASK_SECRET
-
+from bot import bot  # импорт TeleBot объекта
 from telebot.types import Update
 
+# Загрузка переменных окружения
+load_dotenv()
+
+WEBHOOK_BASE = os.getenv("WEBHOOK_URL")
+if not WEBHOOK_BASE:
+    raise RuntimeError("WEBHOOK_URL is not defined!")
+
+WEBHOOK_ROUTE = f"/{bot.token}"
+WEBHOOK_URL = WEBHOOK_BASE.rstrip("/") + WEBHOOK_ROUTE
+
+app = Flask(__name__)
+app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET", "change-me")
+
+# --- Маршрут webhook ---
 @app.route(WEBHOOK_ROUTE, methods=["POST"])
 def webhook():
     if request.headers.get("content-type") == "application/json":
@@ -37,19 +26,21 @@ def webhook():
         bot.process_new_updates([update])
         return "ok", 200
     return "Not JSON", 403
+
+# --- Главная страница ---
 @app.route("/")
 def index():
     return "TAJ-EXPRESS bot (webhook) is running ✅", 200
 
-# IMPORTANT:
-# Render runs via gunicorn which imports app module. Gunicorn will not execute __main__,
-# so we must set webhook when the process starts. We'll attempt to set it here safely.
+# --- Установка webhook при старте ---
 try:
-    # set webhook once when module imported
     bot.remove_webhook()
     ok = bot.set_webhook(url=WEBHOOK_URL)
     print("Webhook set ->", ok, WEBHOOK_URL)
 except Exception as e:
     print("Warning: failed to set webhook during import:", e)
 
-# Note: do not put blocking code here.
+# --- Локальный запуск для теста ---
+if __name__ == "__main__":
+    print("Приложение запущено локально.")
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
