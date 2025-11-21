@@ -111,7 +111,6 @@ def main_handler(message):
             "• Аз 0.1кг то 200кг — 3$"
         )
 
-
     elif text == BTN_TRACK:
         msg = bot.send_message(chat_id, "Треккоди худро равон кунед:")
         bot.register_next_step_handler(msg, track_step)
@@ -122,13 +121,13 @@ def main_handler(message):
     elif text == BTN_BANNED:
         bot.send_message(chat_id,
             "⚠️ Маҳсулотҳои манъшуда:\n"
-	    "🔥 1. Маводҳои тарканда\n"
-	    "🔋 2. Батареяҳо, аккумуляторҳо, магнитҳо ва повербанкҳо\n"
-	    "🥗 3. Хӯрокворӣ, тухмӣ ва шинонандаҳо\n"
-	    "🔫 4. Ҳарбу зарфҳо (аз ҷумла бозичаҳо), кастет ва кордҳо\n"
-	    "⛽ 5. Маводи сӯзишворӣ, равған ва косметика\n"
-	    "💎 6. Нуқра, тилло ва маҳсулоти қиматбаҳо\n"
-	    "💧 7. Моеъҳо, аэрозолҳо ва моддаҳои кимиёвӣ\n"
+            "🔥 1. Маводҳои тарканда\n"
+            "🔋 2. Батареяҳо, аккумуляторҳо, магнитҳо ва повербанкҳо\n"
+            "🥗 3. Хӯрокворӣ, тухмӣ ва шинонандаҳо\n"
+            "🔫 4. Ҳарбу зарфҳо (аз ҷумла бозичаҳо), кастет ва кордҳо\n"
+            "⛽ 5. Маводи сӯзишворӣ, равған ва косметика\n"
+            "💎 6. Нуқра, тилло ва маҳсулоти қиматбаҳо\n"
+            "💧 7. Моеъҳо, аэрозолҳо ва моддаҳои кимиёвӣ\n"
         )
 
     elif text == BTN_CONTACTS:
@@ -236,40 +235,40 @@ def save_track_status(track_code, message):
 # Контакты — звонок и Telegram
 # -----------------------------
 def show_contacts(chat_id):
-    text = (
-        "📞 *Наши контакты*\n\n"
-        "Свяжитесь с нами любым удобным способом:"
-    )
-    # Создаем inline-клавиатуру
-    markup = types.InlineKeyboardMarkup(row_width=1)
+    text = "📞 *Наши контакты*\n\nСвяжитесь с нами любым удобным способом:"
+    markup = types.InlineKeyboardMarkup(row_width=2)
+
     # Первый номер
-    # Кнопка звонка (формат tel: только с цифрами)
-    call_button = types.InlineKeyboardButton("Позвонить 📞", url="tel:992985171732")
-    # Кнопка Telegram
-    telegram_button = types.InlineKeyboardButton("Telegram 📱", url="https://t.me/zubaidullo_tjk")
-	#  Второй номер
-	# Кнопка звонка (формат tel: только с цифрами)
-    call_button = types.InlineKeyboardButton("Позвонить 📞", url="tel:992026460110")
-    # Кнопка Telegram
-    telegram_button = types.InlineKeyboardButton("Telegram 📱", url="https://t.me/mprotj"")
-	 # Третий номер
-	# Кнопка звонка (формат tel: только с цифрами)
-    call_button = types.InlineKeyboardButton("Позвонить 📞", url="tel:992007282626")
-    # Кнопка Telegram
-    telegram_button = types.InlineKeyboardButton("Telegram 📱", url="https://t.me/TAJEXPRESSCARGO")
-    markup.add(call_button, telegram_button)
+    markup.add(
+        types.InlineKeyboardButton("Позвонить 📞 +992985171732", url="tel:%2B992985171732"),
+        types.InlineKeyboardButton("Telegram 📱", url="https://t.me/zubaidullo_tjk")
+    )
+
+    # Второй номер
+    markup.add(
+        types.InlineKeyboardButton("Позвонить 📞 +992026460110", url="tel:%2B992026460110"),
+        types.InlineKeyboardButton("Telegram 📱", url="https://t.me/mprotj")
+    )
+
+    # Третий номер
+    markup.add(
+        types.InlineKeyboardButton("Позвонить 📞 +992007282626", url="tel:%2B992007282626"),
+        types.InlineKeyboardButton("Telegram 📱", url="https://t.me/TAJEXPRESSCARGO")
+    )
+
+    # Канал Telegram
+    markup.add(
+        types.InlineKeyboardButton("📢 Канал Telegram", url="https://t.me/TAJEXPRESSCARGO")
+    )
 
     bot.send_message(chat_id, text, reply_markup=markup, parse_mode="Markdown")
 
-    text = (
-        "📞 Тамос: 8:00–17:30\n\n"
+    info_text = (
+        "📞 Тамос: 8:00–17:30\n"
         "КАРГОИ БОВАРИНОК 🚚✅\n"
         "Мӯҳлати доставка: 15–25 рӯз."
     )
-	# Канал Telegram
-    markup.add(types.InlineKeyboardButton("📢 Канал Telegram", url="https://t.me/TAJEXPRESSCARGO"))
-def show_contacts(chat_id):
-    bot.send_message(chat_id, text, reply_markup=markup)
+    bot.send_message(chat_id, info_text)
 
 # -----------------------------
 # Запуск бота
