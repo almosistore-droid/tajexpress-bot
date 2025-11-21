@@ -77,11 +77,11 @@ def send_main_menu(chat_id):
 def start_handler(message):
     chat_id = message.chat.id
     welcome_text = (
-        "🚀 TAJEXPRESS – ширкати бехтарин барои фиристодан ва харидҳо!\n\n"
+        "🚀 TAJEXPRESS – каргои боваринок ва бехатар барои овардани борхои Шумо!\n\n"
         "📦 Борҳои худро зуд ва бехатар фиристед\n"
         "⏱ Дархостҳоро осон ва зуд иҷро намоед\n"
         "🇨🇳 Суроғаи қулай дар Чин барои харидҳои шумо\n\n"
-        "Менюи зерро интихоб кунед:"
+        "Менюи зерро интихоб кунед:
     )
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     for row in MAIN_MENU:
