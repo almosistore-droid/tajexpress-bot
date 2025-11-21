@@ -81,7 +81,7 @@ def start_handler(message):
         "📦 Борҳои худро зуд ва бехатар фиристед\n"
         "⏱ Дархостҳоро осон ва зуд иҷро намоед\n"
         "🇨🇳 Суроғаи қулай дар Чин барои харидҳои шумо\n\n"
-        "Менюи зерро интихоб кунед:
+        "Менюи зерро интихоб кунед:"
     )
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     for row in MAIN_MENU:
