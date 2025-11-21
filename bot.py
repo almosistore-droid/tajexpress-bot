@@ -240,19 +240,19 @@ def show_contacts(chat_id):
 
     # Первый номер
     markup.add(
-        types.InlineKeyboardButton("Позвонить 📞 +992985171732", url="tel:%2B992985171732"),
+        types.InlineKeyboardButton("Позвонить 📞", url="tel:992985171732"),
         types.InlineKeyboardButton("Telegram 📱", url="https://t.me/zubaidullo_tjk")
     )
 
     # Второй номер
     markup.add(
-        types.InlineKeyboardButton("Позвонить 📞 +992026460110", url="tel:%2B992026460110"),
+        types.InlineKeyboardButton("Позвонить 📞", url="tel:992026460110"),
         types.InlineKeyboardButton("Telegram 📱", url="https://t.me/mprotj")
     )
 
     # Третий номер
     markup.add(
-        types.InlineKeyboardButton("Позвонить 📞 +992007282626", url="tel:%2B992007282626"),
+        types.InlineKeyboardButton("Позвонить 📞", url="tel:992007282626"),
         types.InlineKeyboardButton("Telegram 📱", url="https://t.me/TAJEXPRESSCARGO")
     )
 
