@@ -185,14 +185,16 @@ def address_step_phone(message):
     chat_id = message.chat.id
     user_data[chat_id]["phone"] = message.text
     data = user_data[chat_id]
+
     name = data["name"]
     phone = data["phone"]
+
     full_address = (
-        f"{name} 17590820846 浙江省 金华市 义乌市 福田三小区80栋二单元305 {name} {phone}"
+        f"{name} 17590820846 浙江省 金华市 义乌市 福田三小区80栋二单元305室 #58# {name} {phone}"
     )
+
     bot.send_message(chat_id, full_address)
     send_main_menu(chat_id)
-
 # -----------------------------
 # Проверка трек-кода
 # -----------------------------
