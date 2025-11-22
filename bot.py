@@ -116,7 +116,7 @@ def main_handler(message):
         bot.register_next_step_handler(msg, track_step)
 
     elif text == BTN_DUSHANBE:
-        bot.send_message(chat_id, "🇹🇯 Душанбе, кӯчаи Хисор 34\nТел: +992 985171732")
+        bot.send_message(chat_id, "🇹🇯 Душанбе, 103 мкр \nТел: +992 985171732")
 
     elif text == BTN_BANNED:
         bot.send_message(chat_id,
@@ -236,40 +236,39 @@ def save_track_status(track_code, message):
 # -----------------------------
 def show_contacts(chat_id):
     text = "📞 *Наши контакты*\n\nСвяжитесь с нами любым удобным способом:"
-    markup = types.InlineKeyboardMarkup(row_width=2)
+    bot.send_message(chat_id, text, parse_mode="Markdown")
 
-# 1 — номер
-markup.add(
-    types.InlineKeyboardButton("Позвонить 📞", url="callto:992985171732"),
-    types.InlineKeyboardButton("Telegram 📱", url="https://t.me/zubaidullo_tjk")
-)
-
-# 2 — номер
-markup.add(
-    types.InlineKeyboardButton("Позвонить 📞", url="callto:992026460110"),
-    types.InlineKeyboardButton("Telegram 📱", url="https://t.me/mprotj")
-)
-
-# 3 — номер
-markup.add(
-    types.InlineKeyboardButton("Позвонить 📞", url="callto:992007282626"),
-    types.InlineKeyboardButton("Telegram 📱", url="https://t.me/TAJEXPRESSCARGO")
-)
-
-    # Канал Telegram
-    markup.add(
-        types.InlineKeyboardButton("📢 Канал Telegram", url="https://t.me/TAJEXPRESSCARGO")
+    # Первый номер
+    bot.send_message(
+        chat_id,
+        "📱 +992 985 171 732\nTelegram: https://t.me/zubaidullo_tjk"
     )
 
-    bot.send_message(chat_id, text, reply_markup=markup, parse_mode="Markdown")
+    # Второй номер
+    bot.send_message(
+        chat_id,
+        "📱 +992 026 460 110\nTelegram: https://t.me/mprotj"
+    )
 
+    # Третий номер
+    bot.send_message(
+        chat_id,
+        "📱 +992 007 282 626\nTelegram: https://t.me/TAJEXPRESSCARGO"
+    )
+
+    # Канал
+    bot.send_message(
+        chat_id,
+        "📢 Канал Telegram: https://t.me/TAJEXPRESSCARGO"
+    )
+
+    # Дополнительный текст
     info_text = (
         "📞 Тамос: 8:00–17:30\n"
         "КАРГОИ БОВАРИНОК 🚚✅\n"
         "Мӯҳлати доставка: 15–25 рӯз."
     )
     bot.send_message(chat_id, info_text)
-
 # -----------------------------
 # Запуск бота
 # -----------------------------
