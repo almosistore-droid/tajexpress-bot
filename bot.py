@@ -238,23 +238,23 @@ def show_contacts(chat_id):
     text = "📞 *Наши контакты*\n\nСвяжитесь с нами любым удобным способом:"
     markup = types.InlineKeyboardMarkup(row_width=2)
 
-    # Первый номер
-    markup.add(
-        types.InlineKeyboardButton("Позвонить 📞", url="tel:992985171732"),
-        types.InlineKeyboardButton("Telegram 📱", url="https://t.me/zubaidullo_tjk")
-    )
+# 1 — номер
+markup.add(
+    types.InlineKeyboardButton("Позвонить 📞", url="callto:992985171732"),
+    types.InlineKeyboardButton("Telegram 📱", url="https://t.me/zubaidullo_tjk")
+)
 
-    # Второй номер
-    markup.add(
-        types.InlineKeyboardButton("Позвонить 📞", url="tel:992026460110"),
-        types.InlineKeyboardButton("Telegram 📱", url="https://t.me/mprotj")
-    )
+# 2 — номер
+markup.add(
+    types.InlineKeyboardButton("Позвонить 📞", url="callto:992026460110"),
+    types.InlineKeyboardButton("Telegram 📱", url="https://t.me/mprotj")
+)
 
-    # Третий номер
-    markup.add(
-        types.InlineKeyboardButton("Позвонить 📞", url="tel:992007282626"),
-        types.InlineKeyboardButton("Telegram 📱", url="https://t.me/TAJEXPRESSCARGO")
-    )
+# 3 — номер
+markup.add(
+    types.InlineKeyboardButton("Позвонить 📞", url="callto:992007282626"),
+    types.InlineKeyboardButton("Telegram 📱", url="https://t.me/TAJEXPRESSCARGO")
+)
 
     # Канал Telegram
     markup.add(
