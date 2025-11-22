@@ -235,40 +235,40 @@ def save_track_status(track_code, message):
 # Контакты — звонок и Telegram
 # -----------------------------
 def show_contacts(chat_id):
-    text = "📞 *Наши контакты*\n\nСвяжитесь с нами любым удобным способом:"
-    bot.send_message(chat_id, text, parse_mode="Markdown")
+    text = "📞 *Ракамхо мо*\n\n"
+    markup = types.InlineKeyboardMarkup(row_width=1)
 
     # Первый номер
-    bot.send_message(
-        chat_id,
-        "📱 +992 985 171 732\nTelegram: https://t.me/zubaidullo_tjk"
+    markup.add(
+        types.InlineKeyboardButton("📱 +992 985 171 732", url="https://t.me/zubaidullo_tjk")
     )
 
     # Второй номер
-    bot.send_message(
-        chat_id,
-        "📱 +992 026 460 110\nTelegram: https://t.me/mprotj"
+    markup.add(
+        types.InlineKeyboardButton("📱 +992 026 460 110", url="https://t.me/mprotj")
     )
 
     # Третий номер
-    bot.send_message(
-        chat_id,
-        "📱 +992 007 282 626\nTelegram: https://t.me/TAJEXPRESSCARGO"
+    markup.add(
+        types.InlineKeyboardButton("📱 +992 007 282 626", url="https://t.me/Fayoz_7707")
     )
 
-    # Канал
-    bot.send_message(
-        chat_id,
-        "📢 Канал Telegram: https://t.me/TAJEXPRESSCARGO"
+    # Канал Telegram
+    markup.add(
+        types.InlineKeyboardButton("📢 Канал Telegram", url="https://t.me/TAJEXPRESSCARGO")
     )
 
-    # Дополнительный текст
+    # Отправка кнопок
+    bot.send_message(chat_id, text, reply_markup=markup, parse_mode="Markdown")
+
+    # Дополнительный текст про время работы и доставку
     info_text = (
         "📞 Тамос: 8:00–17:30\n"
         "КАРГОИ БОВАРИНОК 🚚✅\n"
-        "Мӯҳлати доставка: 15–25 рӯз."
+        "Мӯҳлати доставка: 15–25 рӯз (мо одатан борро пеш аз муҳлат мебиёрем)"
     )
     bot.send_message(chat_id, info_text)
+
 # -----------------------------
 # Запуск бота
 # -----------------------------
