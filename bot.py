@@ -188,7 +188,7 @@ def address_step_phone(message):
     name = data["name"]
     phone = data["phone"]
     full_address = (
-        f"{name} 17590820846 浙江省金华市义乌市 福田三小区80栋二单元305"
+        f"{name} 17590820846 浙江省金华市义乌市 福田三小区80栋二单元305室 "
         f"{name} {phone}"
     )
     bot.send_message(chat_id, full_address)
