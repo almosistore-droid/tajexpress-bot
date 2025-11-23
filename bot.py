@@ -176,11 +176,11 @@ def address_step_phone(message):
     bot.send_message(chat_id, full_address)
     send_main_menu(chat_id)
 
-# ================== Трек-код ==================
+ ================== ТРЕК-КОДА ==================
 def track_step(message):
     chat_id = message.chat.id
     code = message.text.strip().upper()
-    status = "Трек-код не найден ❌"
+    status = "Трек-код не найден"
 
     if sheet:
         try:
@@ -195,7 +195,7 @@ def track_step(message):
     bot.send_message(chat_id, f"Статус груза {code}:\n{status}")
     send_main_menu(chat_id)
 
-# ================== ADMIN Трек-код ==================
+# ================== ADMIN ТРЕК-КОДА ==================
 @bot.message_handler(commands=["add_track"])
 def add_track(message):
     if message.from_user.id not in ADMINS:
@@ -215,14 +215,14 @@ def save_track_status(track_code, message):
         try:
             cell = sheet.find(track_code)
             if cell:
-                sheet.update_cell(cell.row, 2, status)  # Обновление статуса
+                sheet.update_cell(cell.row, 2, status)
             else:
-                sheet.append_row([track_code, status])  # Добавление нового
+                sheet.append_row([track_code, status])
             bot.send_message(message.chat.id, f"✅ Трек-код {track_code} добавлен/обновлен.")
         except Exception as e:
             bot.send_message(message.chat.id, f"Ошибка работы с таблицей: {e}")
     else:
-        bot.send_message(message.chat.id, "⚠ Таблица не подключена, нельзя сохранить трек-код.")
+        bot.send_message(message.chat.id, f"⚠ Таблица не подключена, нельзя сохранить трек-код.")
 
 # ================== Контакты ==================
 def show_contacts(chat_id):
