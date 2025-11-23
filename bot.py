@@ -180,36 +180,45 @@ def address_step_phone(message):
 def track_step(message):
     chat_id = message.chat.id
     code = message.text.strip().upper()
-    status = "Трек-код не найден"
+    status = "❌ Трек-код не найден"
 
     if sheet:
         try:
+            # Загружаем все записи из Google Sheet
             records = sheet.get_all_records()
+            # Ищем совпадение по коду
             for row in records:
-                if str(row.get("TrackCode")).upper() == code:
+                if str(row.get("TrackCode", "")).upper() == code:
                     status = row.get("Status", status)
                     break
         except Exception as e:
-            status = f"Ошибка чтения таблицы: {e}"
+            status = f"❌ Ошибка чтения таблицы: {e}"
+    else:
+        status = "⚠ Таблица не подключена"
 
     bot.send_message(chat_id, f"Статус груза {code}:\n{status}")
     send_main_menu(chat_id)
 
-def load_track_codes():
-    import gspread
-    from oauth2client.service_account import ServiceAccountCredentials
+# ================== Загрузка всех трек-кодов в память ==================
+# (для ускоренного поиска, если много данных)
+track_codes_cache = {}
 
-    try:
-        scope = ["https://spreadsheets.google.com/feeds",'https://www.googleapis.com/auth/drive']
-        creds = ServiceAccountCredentials.from_json_keyfile_name("taj-express-478705-b4ad615749f9.json", scope)
-        client = gspread.authorize(creds)
-        sheet = client.open("Имя_Таблицы").sheet1
-        data = sheet.get_all_records()
-        print("Загруженные данные:", data)  # <- временно
-        return {row["Code"]: row["Status"] for row in data}
-    except Exception as e:
-        print("Ошибка подключения:", e)
-        return {}
+def load_track_codes_cache():
+    global track_codes_cache
+    if sheet:
+        try:
+            records = sheet.get_all_records()
+            track_codes_cache = {str(row.get("TrackCode", "")).upper(): row.get("Status", "") for row in records}
+            print(f"✅ Загружено {len(track_codes_cache)} трек-кодов")
+        except Exception as e:
+            print(f"❌ Ошибка загрузки трек-кодов: {e}")
+
+def track_step_cached(message):
+    chat_id = message.chat.id
+    code = message.text.strip().upper()
+    status = track_codes_cache.get(code, "❌ Трек-код не найден")
+    bot.send_message(chat_id, f"Статус груза {code}:\n{status}")
+    send_main_menu(chat_id)
 
 # ================== ADMIN ТРЕК-КОДА ==================
 @bot.message_handler(commands=["add_track"])
@@ -234,11 +243,17 @@ def save_track_status(track_code, message):
                 sheet.update_cell(cell.row, 2, status)
             else:
                 sheet.append_row([track_code, status])
+            # Обновляем кэш
+            track_codes_cache[track_code] = status
             bot.send_message(message.chat.id, f"✅ Трек-код {track_code} добавлен/обновлен.")
         except Exception as e:
-            bot.send_message(message.chat.id, f"Ошибка работы с таблицей: {e}")
+            bot.send_message(message.chat.id, f"❌ Ошибка работы с таблицей: {e}")
     else:
         bot.send_message(message.chat.id, f"⚠ Таблица не подключена, нельзя сохранить трек-код.")
+
+# ================== Загрузка кэша при старте ==================
+if sheet:
+    load_track_codes_cache()
 
 # ================== Контакты ==================
 def show_contacts(chat_id):
