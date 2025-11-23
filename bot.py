@@ -28,30 +28,28 @@ user_data = {}
 ADMINS = [1324431208]  # вставьте сюда id админа
 
 # ================== GOOGLE SHEETS ==================
-GOOGLE_CREDS_JSON = os.getenv("GOOGLE_CREDENTIALS_JSON")
-if not GOOGLE_CREDS_JSON:
-    raise RuntimeError("GOOGLE_CREDENTIALS_JSON не определен!")
+GOOGLE_CREDS_PATH = "taj-express-478705-b4ad615749f9.json"  # Используем файл ключа
+if not os.path.exists(GOOGLE_CREDS_PATH):
+    raise RuntimeError(f"❌ Файл Google credentials не найден: {GOOGLE_CREDS_PATH}")
+
+try:
+    with open(GOOGLE_CREDS_PATH, "r") as f:
+        creds_dict = json.load(f)
+except Exception as e:
+    raise RuntimeError(f"❌ Ошибка загрузки Google JSON: {e}")
 
 scope = [
-    "https://spreadsheets.google.com/feeds",
     "https://www.googleapis.com/auth/spreadsheets",
-    "https://www.googleapis.com/auth/drive.file",
     "https://www.googleapis.com/auth/drive"
 ]
+creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+gc = gspread.authorize(creds)
 
+SHEET_NAME = "Tracks"
 try:
-    creds_dict = json.loads(GOOGLE_CREDS_JSON)
-    creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
-    gc = gspread.authorize(creds)
+    sheet = gc.open(SHEET_NAME).sheet1
 except Exception as e:
-    print("❌ Ошибка авторизации Google:", e)
-    gc = None
-
-SHEET_NAME = "Tracks"  # Название вашей Google Sheet
-try:
-    sheet = gc.open(SHEET_NAME).sheet1 if gc else None
-except Exception as e:
-    print("❌ Ошибка подключения к Google Sheet:", e)
+    print("❌ Ошибка подключения к таблице:", e)
     sheet = None
 
 # ================== MENU ==================
