@@ -28,15 +28,12 @@ user_data = {}
 ADMINS = [1324431208]  # вставьте сюда id админа
 
 # ================== GOOGLE SHEETS ==================
-GOOGLE_CREDS_PATH = "taj-express-478705-b4ad615749f9.json"  # Используем файл ключа
+GOOGLE_CREDS_PATH = "taj-express-478705-b4ad615749f9.json"
 if not os.path.exists(GOOGLE_CREDS_PATH):
     raise RuntimeError(f"❌ Файл Google credentials не найден: {GOOGLE_CREDS_PATH}")
 
-try:
-    with open(GOOGLE_CREDS_PATH, "r") as f:
-        creds_dict = json.load(f)
-except Exception as e:
-    raise RuntimeError(f"❌ Ошибка загрузки Google JSON: {e}")
+with open(GOOGLE_CREDS_PATH, "r") as f:
+    creds_dict = json.load(f)
 
 scope = [
     "https://www.googleapis.com/auth/spreadsheets",
@@ -60,8 +57,10 @@ BTN_PRICE_LIST = "📦 Нархнома"
 BTN_TRACK = "🔍 Проверка трек-кода"
 BTN_BANNED = "🚫 Молхои манъшуда"
 BTN_CONTACTS = "📞 Контакты"
+BTN_REGISTER = "📝 Регистрация"
 
 MAIN_MENU = [
+    [BTN_REGISTER],
     [BTN_DELIVERY, BTN_ADDRESS],
     [BTN_TRACK, BTN_DUSHANBE],
     [BTN_PRICE_LIST, BTN_BANNED],
@@ -85,7 +84,11 @@ def main_handler(message):
     chat_id = message.chat.id
     text = message.text
 
-    if text == BTN_DELIVERY:
+    if text == BTN_REGISTER:
+        msg = bot.send_message(chat_id, "Введите ваше имя:")
+        bot.register_next_step_handler(msg, register_step_name)
+
+    elif text == BTN_DELIVERY:
         msg = bot.send_message(chat_id, "Номи худро ворид кунед:")
         bot.register_next_step_handler(msg, delivery_step_name)
 
@@ -124,6 +127,34 @@ def main_handler(message):
 
     else:
         send_main_menu(chat_id)
+
+# ================== Регистрация ==================
+def register_step_name(message):
+    chat_id = message.chat.id
+    user_data[chat_id] = {"name": message.text}
+    msg = bot.send_message(chat_id, "Введите ваш номер телефона:")
+    bot.register_next_step_handler(msg, register_step_phone)
+
+def register_step_phone(message):
+    chat_id = message.chat.id
+    user_data[chat_id]["phone"] = message.text
+
+    # Сохраняем в Google Sheets
+    try:
+        users_sheet = gc.open("Tracks").worksheet("Users")
+    except gspread.WorksheetNotFound:
+        users_sheet = gc.open("Tracks").add_worksheet(title="Users", rows="1000", cols="3")
+        users_sheet.append_row(["ChatID", "Name", "Phone"])
+
+    cell = users_sheet.find(str(chat_id))
+    if cell:
+        users_sheet.update(f"B{cell.row}", user_data[chat_id]["name"])
+        users_sheet.update(f"C{cell.row}", user_data[chat_id]["phone"])
+    else:
+        users_sheet.append_row([chat_id, user_data[chat_id]["name"], user_data[chat_id]["phone"]])
+
+    bot.send_message(chat_id, f"✅ Регистрация завершена!\nИмя: {user_data[chat_id]['name']}\nТел: {user_data[chat_id]['phone']}")
+    send_main_menu(chat_id)
 
 # ================== Доставка ==================
 def delivery_step_name(message):
@@ -171,7 +202,7 @@ def address_step_phone(message):
     user_data[chat_id]["phone"] = message.text
     data = user_data[chat_id]
     full_address = (
-        f"{data['name']} 17590820846 浙江省 金华市 义乌市 福田三小区80栋二单元305室{data['name']}{data['phone']}"
+        f"{data['name']} 17590820846 浙江省 金华市 义乌市 福田三小区80栋二单元305室 {data['name']} {data['phone']}"
     )
     bot.send_message(chat_id, full_address)
     send_main_menu(chat_id)
@@ -180,7 +211,6 @@ def address_step_phone(message):
 def track_step(message):
     chat_id = message.chat.id
     code = message.text.strip().upper()
-    print("Код из сообщения:", code)
 
     info_text = "❌ Трек-код не найден"
 
@@ -189,7 +219,6 @@ def track_step(message):
             records = sheet.get_all_records()
             for row in records:
                 if str(row.get("Code", "")).upper() == code:
-                    # Формируем текст с полной информацией, включая сам трек-код
                     info_text = (
                         f"🔢 Трек-код: {row.get('Code', '-')}\n"
                         f"📦 Статус: {row.get('Status', '-')}\n"
@@ -203,26 +232,6 @@ def track_step(message):
             info_text = f"Ошибка чтения таблицы: {e}"
 
     bot.send_message(chat_id, info_text)
-    send_main_menu(chat_id)
-# ================== Загрузка всех трек-кодов в память ==================
-# (для ускоренного поиска, если много данных)
-track_codes_cache = {}
-
-def load_track_codes_cache():
-    global track_codes_cache
-    if sheet:
-        try:
-            records = sheet.get_all_records()
-            track_codes_cache = {str(row.get("TrackCode", "")).upper(): row.get("Status", "") for row in records}
-            print(f"✅ Загружено {len(track_codes_cache)} трек-кодов")
-        except Exception as e:
-            print(f"❌ Ошибка загрузки трек-кодов: {e}")
-
-def track_step_cached(message):
-    chat_id = message.chat.id
-    code = message.text.strip().upper()
-    status = track_codes_cache.get(code, "❌ Трек-код не найден")
-    bot.send_message(chat_id, f"Статус груза {code}:\n{status}")
     send_main_menu(chat_id)
 
 # ================== ADMIN ТРЕК-КОДА ==================
@@ -241,28 +250,32 @@ def add_track_step(message):
 
 def save_track_status(track_code, message):
     status = message.text.strip()
-
     if not sheet:
         bot.send_message(message.chat.id, "⚠ Таблица не подключена, нельзя сохранить трек-код.")
         return
-
     try:
-        # Ищем трек-код в таблице
         cell = sheet.find(track_code)
         if cell:
-            # Обновляем статус во второй колонке
             sheet.update_cell(cell.row, 2, status)
             bot.send_message(message.chat.id, f"✅ Трек-код {track_code} обновлён.")
         else:
-            # Добавляем новый трек-код в конец таблицы
             sheet.append_row([track_code, status])
             bot.send_message(message.chat.id, f"✅ Трек-код {track_code} добавлен.")
 
+        # Уведомление пользователям при доставке
+        if status.lower() == "доставлен":
+            try:
+                users_sheet = gc.open("Tracks").worksheet("Users")
+                users = users_sheet.get_all_records()
+                for user in users:
+                    chat_id = int(user["ChatID"])
+                    name = user.get("Name", "")
+                    bot.send_message(chat_id, f"✅ {name}, ваш трек-код {track_code} доставлен!")
+            except Exception as e:
+                print(f"Ошибка уведомления пользователей: {e}")
+
     except Exception as e:
         bot.send_message(message.chat.id, f"⚠ Ошибка работы с таблицей: {e}")
-# ================== Загрузка кэша при старте ==================
-if sheet:
-    load_track_codes_cache()
 
 # ================== Контакты ==================
 def show_contacts(chat_id):
@@ -270,7 +283,7 @@ def show_contacts(chat_id):
     markup = types.InlineKeyboardMarkup(row_width=1)
 
     markup.add(types.InlineKeyboardButton("📱 +992 985 171 732", url="https://t.me/zubaidullo_tjk"))
-    markup.add(types.InlineKeyboardButton("📱 +992 026 460 110", url="https://t.me/mprotj"))
+    markup.add(types.InlineKeyboardButton("📱 +992 933 055 707", url="https://t.me/zubaidullo_tjk"))
     markup.add(types.InlineKeyboardButton("📱 +992 007 282 626", url="https://t.me/Fayoz_7707"))
     markup.add(types.InlineKeyboardButton("📢 Канал Telegram", url="https://t.me/TAJEXPRESSCARGO"))
 
@@ -280,6 +293,7 @@ def show_contacts(chat_id):
         "📞 Тамос: 8:00–17:30\n"
         "КАРГОИ БОВАРИНОК 🚚✅\n"
         "Мӯҳлати доставка: 15–25 рӯз (мо одатан борро пеш аз муҳлат мебиёрем)"
+        "Барои маълумоти бештар ба инстаграми мо ворид шавед https://www.instagram.com/taj_express01?igsh=ZmcxdHE4eXI0aWc1"
     )
     bot.send_message(chat_id, info_text)
 
