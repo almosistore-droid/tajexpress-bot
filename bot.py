@@ -6,7 +6,6 @@ from telebot.apihelper import ApiTelegramException
 from dotenv import load_dotenv
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-import csv
 
 load_dotenv()
 
@@ -30,33 +29,29 @@ ADMINS = [1324431208]  # вставьте сюда id админа
 
 # ================== GOOGLE SHEETS ==================
 GOOGLE_CREDS_JSON = os.getenv("GOOGLE_CREDENTIALS_JSON")
-
 if not GOOGLE_CREDS_JSON:
-    raise RuntimeError("❌ GOOGLE_CREDENTIALS_JSON не определен в окружении!")
-
-# Если Render обрезал переносы — восстанавливаем формат
-GOOGLE_CREDS_JSON = GOOGLE_CREDS_JSON.replace("\\n", "\n").strip()
-
-try:
-    creds_dict = json.loads(GOOGLE_CREDS_JSON)
-except Exception as e:
-    raise RuntimeError(f"❌ Ошибка загрузки Google JSON: {e}\n"
-                       f"Содержимое переменной начинается так:\n"
-                       f"{GOOGLE_CREDS_JSON[:50]}...")
+    raise RuntimeError("GOOGLE_CREDENTIALS_JSON не определен!")
 
 scope = [
+    "https://spreadsheets.google.com/feeds",
     "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive.file",
     "https://www.googleapis.com/auth/drive"
 ]
 
-creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
-gc = gspread.authorize(creds)
-
-SHEET_NAME = "Tracks"
 try:
-    sheet = gc.open(SHEET_NAME).sheet1
+    creds_dict = json.loads(GOOGLE_CREDS_JSON)
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+    gc = gspread.authorize(creds)
 except Exception as e:
-    print("❌ Ошибка подключения к таблице:", e)
+    print("❌ Ошибка авторизации Google:", e)
+    gc = None
+
+SHEET_NAME = "Tracks"  # Название вашей Google Sheet
+try:
+    sheet = gc.open(SHEET_NAME).sheet1 if gc else None
+except Exception as e:
+    print("❌ Ошибка подключения к Google Sheet:", e)
     sheet = None
 
 # ================== MENU ==================
@@ -86,8 +81,7 @@ def send_main_menu(chat_id):
 def start_handler(message):
     send_main_menu(message.chat.id)
 
-# Основной обработчик
-# -----------------------------
+# ================== MAIN HANDLER ==================
 @bot.message_handler(func=lambda m: True)
 def main_handler(message):
     chat_id = message.chat.id
@@ -163,8 +157,7 @@ def delivery_step_phone(message):
         bot.send_message(chat_id, f"Хатогии ирсол: {e}")
     send_main_menu(chat_id)
 
-# Гирифтани адрес
-# -----------------------------
+# ================== Адрес ==================
 def address_step_name(message):
     chat_id = message.chat.id
     if not message.text.isascii():
@@ -179,23 +172,17 @@ def address_step_phone(message):
     chat_id = message.chat.id
     user_data[chat_id]["phone"] = message.text
     data = user_data[chat_id]
-
-    name = data["name"]
-    phone = data["phone"]
-
     full_address = (
-        f"{name} 17590820846 浙江省 金华市 义乌市 福田三小区80栋二单元305室{name}{phone}"
+        f"{data['name']} 17590820846 浙江省 金华市 义乌市 福田三小区80栋二单元305室{data['name']}{data['phone']}"
     )
-
     bot.send_message(chat_id, full_address)
     send_main_menu(chat_id)
 
-
-# ================== ТРЕК-КОДА  ==================
+# ================== Трек-код ==================
 def track_step(message):
     chat_id = message.chat.id
     code = message.text.strip().upper()
-    status = "Трек-код не найден"
+    status = "Трек-код не найден ❌"
 
     if sheet:
         try:
@@ -210,7 +197,7 @@ def track_step(message):
     bot.send_message(chat_id, f"Статус груза {code}:\n{status}")
     send_main_menu(chat_id)
 
-# ================== ADMIN ТРЕК-КОДА  ==================
+# ================== ADMIN Трек-код ==================
 @bot.message_handler(commands=["add_track"])
 def add_track(message):
     if message.from_user.id not in ADMINS:
@@ -228,121 +215,35 @@ def save_track_status(track_code, message):
     status = message.text.strip()
     if sheet:
         try:
-            # ищем существующую строку
             cell = sheet.find(track_code)
             if cell:
-                sheet.update_cell(cell.row, 2, status)
+                sheet.update_cell(cell.row, 2, status)  # Обновление статуса
             else:
-                sheet.append_row([track_code, status])
+                sheet.append_row([track_code, status])  # Добавление нового
             bot.send_message(message.chat.id, f"✅ Трек-код {track_code} добавлен/обновлен.")
         except Exception as e:
             bot.send_message(message.chat.id, f"Ошибка работы с таблицей: {e}")
     else:
-        bot.send_message(message.chat.id, f"⚠ Таблица не подключена, нельзя сохранить трек-код.")
+        bot.send_message(message.chat.id, "⚠ Таблица не подключена, нельзя сохранить трек-код.")
 
-# -----------------------------
-# Контакты — звонок и Telegram
-# -----------------------------
+# ================== Контакты ==================
 def show_contacts(chat_id):
     text = "📞 *Ракамхо мо*\n\n"
     markup = types.InlineKeyboardMarkup(row_width=1)
 
-    # Первый номер
-    markup.add(
-        types.InlineKeyboardButton("📱 +992 985 171 732", url="https://t.me/zubaidullo_tjk")
-    )
+    markup.add(types.InlineKeyboardButton("📱 +992 985 171 732", url="https://t.me/zubaidullo_tjk"))
+    markup.add(types.InlineKeyboardButton("📱 +992 026 460 110", url="https://t.me/mprotj"))
+    markup.add(types.InlineKeyboardButton("📱 +992 007 282 626", url="https://t.me/Fayoz_7707"))
+    markup.add(types.InlineKeyboardButton("📢 Канал Telegram", url="https://t.me/TAJEXPRESSCARGO"))
 
-    # Второй номер
-    markup.add(
-        types.InlineKeyboardButton("📱 +992 026 460 110", url="https://t.me/mprotj")
-    )
-
-    # Третий номер
-    markup.add(
-        types.InlineKeyboardButton("📱 +992 007 282 626", url="https://t.me/Fayoz_7707")
-    )
-
-    # Канал Telegram
-    markup.add(
-        types.InlineKeyboardButton("📢 Канал Telegram", url="https://t.me/TAJEXPRESSCARGO")
-    )
-
-    # Отправка кнопок
     bot.send_message(chat_id, text, reply_markup=markup, parse_mode="Markdown")
 
-    # Дополнительный текст про время работы и доставку
     info_text = (
         "📞 Тамос: 8:00–17:30\n"
         "КАРГОИ БОВАРИНОК 🚚✅\n"
         "Мӯҳлати доставка: 15–25 рӯз (мо одатан борро пеш аз муҳлат мебиёрем)"
     )
     bot.send_message(chat_id, info_text)
-
-# Исходные данные (можно загрузить из CSV или Excel)
-data = [
-    {
-        "TrackCode": """9811326610820
-YT8813202188985
-78552200550486
-78552234707581""",
-        "Status": "В пути",
-        "Date": "14.11.2025",
-        "Товар": "Куайди",
-        "Штук": 4,
-        "Цена($)": 110,
-        "Код Товара": "Tojiddin000000226",
-        "Номер Получатель": 226
-    },
-    {
-        "TrackCode": """7357241045762
-464854704143868
-78552531136217
-YT8813927794038
-JT5430540892635""",
-        "Status": "В пути",
-        "Date": "16.11.2025",
-        "Товар": "Куайди",
-        "Штук": 5,
-        "Цена($)": 110,
-        "Код Товара": "Tojiddin000000226",
-        "Номер Получатель": 226
-    },
-    # Добавьте остальные записи сюда
-]
-
-# Создаём список с отдельными трек-кодами
-expanded_data = []
-for row in data:
-    codes = row["TrackCode"].split("\n")
-    for code in codes:
-        expanded_data.append({
-            "TrackCode": code.strip(),
-            "Status": row["Status"],
-            "Date": row["Date"],
-            "Товар": row["Товар"],
-            "Штук": row["Штук"],
-            "Цена($)": row["Цена($)"],
-            "Код Товара": row["Код Товара"],
-            "Номер Получатель": row["Номер Получатель"]
-        })
-
-# Сохраняем в CSV для удобной работы
-with open("trackcodes_expanded.csv", "w", newline="", encoding="utf-8") as f:
-    writer = csv.DictWriter(f, fieldnames=expanded_data[0].keys())
-    writer.writeheader()
-    writer.writerows(expanded_data)
-
-print("Данные успешно преобразованы и сохранены в trackcodes_expanded.csv")
-
-# Функция поиска по трек-коду
-def find_status(track_code):
-    for row in expanded_data:
-        if row["TrackCode"] == track_code:
-            return f"Статус: {row['Status']}, Дата: {row['Date']}, Товар: {row['Товар']}, Получатель: {row['Код Товара']}"
-    return "Трек-код не найден ❌"
-
-# Пример использования
-print(find_status("YT8813202188985"))
 
 # ================== RUN BOT ==================
 if __name__ == "__main__":
