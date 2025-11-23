@@ -294,8 +294,10 @@ def show_contacts(chat_id):
 
 # ================== Настройка webhook ==================
 if __name__ == "__main__":
-    # Установите свой URL
-    WEBHOOK_URL = f"https://<your-app-url>/{TOKEN}"
+    # Установите свой URL с токеном
+    WEBHOOK_URL = f"https://tajexpress-bot.onrender.com/{TOKEN}"
+    
     bot.remove_webhook()
-    bot.set_webhook(url=https://tajexpress-bot.onrender.com)
+    bot.set_webhook(url=WEBHOOK_URL)  # URL обязательно в кавычках
+    
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
