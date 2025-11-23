@@ -180,32 +180,29 @@ def address_step_phone(message):
 def track_step(message):
     chat_id = message.chat.id
     code = message.text.strip().upper()
-    status = "❌ Трек-код не найден"
+    print("Код из сообщения:", code)
 
-    if not sheet:
-        bot.send_message(chat_id, "⚠ Таблица не подключена, попробуйте позже.")
-        send_main_menu(chat_id)
-        return
+    info_text = "❌ Трек-код не найден"
 
-    try:
-        # Получаем все записи с таблицы
-        records = sheet.get_all_records()
-        found = False
-        for row in records:
-            # Убедимся, что в строке есть ключ "TrackCode"
-            track_code = str(row.get("TrackCode", "")).upper()
-            if track_code == code:
-                status = row.get("Status", "Статус не указан")
-                found = True
-                break
+    if sheet:
+        try:
+            records = sheet.get_all_records()
+            for row in records:
+                if str(row.get("Code", "")).upper() == code:
+                    # Формируем текст с полной информацией, включая сам трек-код
+                    info_text = (
+                        f"🔢 Трек-код: {row.get('Code', '-')}\n"
+                        f"📦 Статус: {row.get('Status', '-')}\n"
+                        f"📅 Дата: {row.get('Date', '-')}\n"
+                        f"👤 Имя клиента: {row.get('Name', '-')}\n"
+                        f"📞 Номер: {row.get('Number', '-')}\n"
+                        f"🆔 Код: {row.get('Cod', '-')}"
+                    )
+                    break
+        except Exception as e:
+            info_text = f"Ошибка чтения таблицы: {e}"
 
-        if not found:
-            status = "❌ Трек-код не найден"
-
-    except Exception as e:
-        status = f"⚠ Ошибка чтения таблицы: {e}"
-
-    bot.send_message(chat_id, f"Статус груза {code}:\n{status}")
+    bot.send_message(chat_id, info_text)
     send_main_menu(chat_id)
 # ================== Загрузка всех трек-кодов в память ==================
 # (для ускоренного поиска, если много данных)
