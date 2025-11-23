@@ -180,21 +180,30 @@ def address_step_phone(message):
 def track_step(message):
     chat_id = message.chat.id
     code = message.text.strip().upper()
-    
-    print("Код из сообщения:", code)  # <-- сюда
+    status = "❌ Трек-код не найден"
 
-    status = "Трек-код не найден"
+    if not sheet:
+        bot.send_message(chat_id, "⚠ Таблица не подключена, попробуйте позже.")
+        send_main_menu(chat_id)
+        return
 
-    if sheet:
-        try:
-            records = sheet.get_all_records()
-            print("Все записи:", records)  # <-- сюда для отладки
-            for row in records:
-                if str(row.get("TrackCode")).upper() == code:
-                    status = row.get("Status", status)
-                    break
-        except Exception as e:
-            status = f"Ошибка чтения таблицы: {e}"
+    try:
+        # Получаем все записи с таблицы
+        records = sheet.get_all_records()
+        found = False
+        for row in records:
+            # Убедимся, что в строке есть ключ "TrackCode"
+            track_code = str(row.get("TrackCode", "")).upper()
+            if track_code == code:
+                status = row.get("Status", "Статус не указан")
+                found = True
+                break
+
+        if not found:
+            status = "❌ Трек-код не найден"
+
+    except Exception as e:
+        status = f"⚠ Ошибка чтения таблицы: {e}"
 
     bot.send_message(chat_id, f"Статус груза {code}:\n{status}")
     send_main_menu(chat_id)
