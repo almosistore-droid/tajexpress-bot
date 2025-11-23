@@ -176,7 +176,7 @@ def address_step_phone(message):
     bot.send_message(chat_id, full_address)
     send_main_menu(chat_id)
 
- ================== ТРЕК-КОДА ==================
+# ================== ТРЕК-КОДА ==================
 def track_step(message):
     chat_id = message.chat.id
     code = message.text.strip().upper()
