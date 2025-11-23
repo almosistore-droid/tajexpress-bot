@@ -231,26 +231,30 @@ def add_track(message):
 
 def add_track_step(message):
     track_code = message.text.strip().upper()
-    msg = bot.send_message(message.chat.id, f"Введите статус для {track_code}:")
+    msg = bot.send_message(message.chat.id, f"Введите статус для трек-кода {track_code}:")
     bot.register_next_step_handler(msg, lambda m: save_track_status(track_code, m))
 
 def save_track_status(track_code, message):
     status = message.text.strip()
-    if sheet:
-        try:
-            cell = sheet.find(track_code)
-            if cell:
-                sheet.update_cell(cell.row, 2, status)
-            else:
-                sheet.append_row([track_code, status])
-            # Обновляем кэш
-            track_codes_cache[track_code] = status
-            bot.send_message(message.chat.id, f"✅ Трек-код {track_code} добавлен/обновлен.")
-        except Exception as e:
-            bot.send_message(message.chat.id, f"❌ Ошибка работы с таблицей: {e}")
-    else:
-        bot.send_message(message.chat.id, f"⚠ Таблица не подключена, нельзя сохранить трек-код.")
 
+    if not sheet:
+        bot.send_message(message.chat.id, "⚠ Таблица не подключена, нельзя сохранить трек-код.")
+        return
+
+    try:
+        # Ищем трек-код в таблице
+        cell = sheet.find(track_code)
+        if cell:
+            # Обновляем статус во второй колонке
+            sheet.update_cell(cell.row, 2, status)
+            bot.send_message(message.chat.id, f"✅ Трек-код {track_code} обновлён.")
+        else:
+            # Добавляем новый трек-код в конец таблицы
+            sheet.append_row([track_code, status])
+            bot.send_message(message.chat.id, f"✅ Трек-код {track_code} добавлен.")
+
+    except Exception as e:
+        bot.send_message(message.chat.id, f"⚠ Ошибка работы с таблицей: {e}")
 # ================== Загрузка кэша при старте ==================
 if sheet:
     load_track_codes_cache()
