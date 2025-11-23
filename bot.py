@@ -6,6 +6,7 @@ from telebot.apihelper import ApiTelegramException
 from dotenv import load_dotenv
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
+import csv
 
 load_dotenv()
 
@@ -267,6 +268,72 @@ def show_contacts(chat_id):
         "Мӯҳлати доставка: 15–25 рӯз (мо одатан борро пеш аз муҳлат мебиёрем)"
     )
     bot.send_message(chat_id, info_text)
+
+# Исходные данные (можно загрузить из CSV или Excel)
+data = [
+    {
+        "TrackCode": """9811326610820
+YT8813202188985
+78552200550486
+78552234707581""",
+        "Status": "В пути",
+        "Date": "14.11.2025",
+        "Товар": "Куайди",
+        "Штук": 4,
+        "Цена($)": 110,
+        "Код Товара": "Tojiddin000000226",
+        "Номер Получатель": 226
+    },
+    {
+        "TrackCode": """7357241045762
+464854704143868
+78552531136217
+YT8813927794038
+JT5430540892635""",
+        "Status": "В пути",
+        "Date": "16.11.2025",
+        "Товар": "Куайди",
+        "Штук": 5,
+        "Цена($)": 110,
+        "Код Товара": "Tojiddin000000226",
+        "Номер Получатель": 226
+    },
+    # Добавьте остальные записи сюда
+]
+
+# Создаём список с отдельными трек-кодами
+expanded_data = []
+for row in data:
+    codes = row["TrackCode"].split("\n")
+    for code in codes:
+        expanded_data.append({
+            "TrackCode": code.strip(),
+            "Status": row["Status"],
+            "Date": row["Date"],
+            "Товар": row["Товар"],
+            "Штук": row["Штук"],
+            "Цена($)": row["Цена($)"],
+            "Код Товара": row["Код Товара"],
+            "Номер Получатель": row["Номер Получатель"]
+        })
+
+# Сохраняем в CSV для удобной работы
+with open("trackcodes_expanded.csv", "w", newline="", encoding="utf-8") as f:
+    writer = csv.DictWriter(f, fieldnames=expanded_data[0].keys())
+    writer.writeheader()
+    writer.writerows(expanded_data)
+
+print("Данные успешно преобразованы и сохранены в trackcodes_expanded.csv")
+
+# Функция поиска по трек-коду
+def find_status(track_code):
+    for row in expanded_data:
+        if row["TrackCode"] == track_code:
+            return f"Статус: {row['Status']}, Дата: {row['Date']}, Товар: {row['Товар']}, Получатель: {row['Код Товара']}"
+    return "Трек-код не найден ❌"
+
+# Пример использования
+print(find_status("YT8813202188985"))
 
 # ================== RUN BOT ==================
 if __name__ == "__main__":
