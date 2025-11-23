@@ -276,6 +276,28 @@ def save_track_status(track_code, message):
 
     except Exception as e:
         bot.send_message(message.chat.id, f"⚠ Ошибка работы с таблицей: {e}")
+# Пример уведомления о доставке
+def notify_user_delivery(chat_id, track_code, name):
+    try:
+        # Создаем inline-кнопку
+        markup = types.InlineKeyboardMarkup()
+        markup.add(types.InlineKeyboardButton("🚚 Доставка", callback_data="start_delivery"))
+
+        # Отправляем сообщение с кнопкой
+        bot.send_message(
+            chat_id,
+            f"✅ {name}, ваш трек-код {track_code} обновлён!\nВы можете оформить новую доставку ниже.",
+            reply_markup=markup
+        )
+    except Exception as e:
+        print(f"Ошибка уведомления: {e}")
+
+# Обработчик нажатия на кнопку
+@bot.callback_query_handler(func=lambda call: call.data == "start_delivery")
+def callback_start_delivery(call):
+    chat_id = call.message.chat.id
+    msg = bot.send_message(chat_id, "Номи худро ворид кунед:")
+    bot.register_next_step_handler(msg, delivery_step_name)
 
 # ================== Контакты ==================
 def show_contacts(chat_id):
