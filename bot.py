@@ -1,14 +1,15 @@
 import os
+import json
 import telebot
 from telebot import types
 from telebot.apihelper import ApiTelegramException
 from dotenv import load_dotenv
-import json
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 
-# -----------------------------
-# Настройки
-# -----------------------------
 load_dotenv()
+
+# ================== TELEGRAM BOT ==================
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 if not TOKEN:
     raise RuntimeError("TELEGRAM_BOT_TOKEN не определен!")
@@ -20,34 +21,37 @@ try:
 except ValueError:
     DELIVERY_GROUP_ID = 0
 
-TRACK_FILE = "track_codes.json"
-
-def load_track_codes():
-    try:
-        with open(TRACK_FILE, "r") as f:
-            return json.load(f)
-    except:
-        return {}
-
-def save_track_codes(codes):
-    with open(TRACK_FILE, "w") as f:
-        json.dump(codes, f, indent=4)
-
-# -----------------------------
-# Администраторы
-# -----------------------------
-ADMINS = [1324431208]
-
-# -----------------------------
-# Хранилище данных
-# -----------------------------
+# Хранилища данных
 user_data = {}
 
-# -----------------------------
-# Кнопки меню
-# -----------------------------
+# Админы
+ADMINS = [1324431208]  # вставьте сюда id админа
+
+# ================== GOOGLE SHEETS ==================
+GOOGLE_CREDS_JSON = os.getenv("GOOGLE_CREDENTIALS_JSON")
+if not GOOGLE_CREDS_JSON:
+    raise RuntimeError("GOOGLE_CREDENTIALS_JSON не определен!")
+
+scope = ["https://spreadsheets.google.com/feeds",
+         "https://www.googleapis.com/auth/spreadsheets",
+         "https://www.googleapis.com/auth/drive.file",
+         "https://www.googleapis.com/auth/drive"]
+
+# Если GOOGLE_CREDS_JSON хранится как текст (Render Secret)
+creds_dict = json.loads(GOOGLE_CREDS_JSON)
+creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+gc = gspread.authorize(creds)
+
+SHEET_NAME = "Tracks"  # Название вашей Google Sheet
+try:
+    sheet = gc.open(SHEET_NAME).sheet1
+except Exception as e:
+    print("Ошибка подключения к Google Sheet:", e)
+    sheet = None
+
+# ================== MENU ==================
 BTN_DELIVERY = "🚚 Доставка"
-BTN_ADDRESS = "🇨🇳 Гирифтани адрес"
+BTN_ADDRESS = "🇨🇳 Гирифтани адрес ва код"
 BTN_DUSHANBE = "🇹🇯 Адрес Душанбе"
 BTN_PRICE_LIST = "📦 Нархнома"
 BTN_TRACK = "🔍 Проверка трек-кода"
@@ -61,34 +65,17 @@ MAIN_MENU = [
     [BTN_CONTACTS]
 ]
 
-# -----------------------------
-# Главное меню
-# -----------------------------
 def send_main_menu(chat_id):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     for row in MAIN_MENU:
         markup.add(*[types.KeyboardButton(text) for text in row])
-    bot.send_message(chat_id, "Меню:", reply_markup=markup)
+    bot.send_message(chat_id, "Выберите пункт меню:", reply_markup=markup)
 
-# -----------------------------
-# Команда /start — приветствие
-# -----------------------------
+# ================== START ==================
 @bot.message_handler(commands=["start", "help"])
 def start_handler(message):
-    chat_id = message.chat.id
-    welcome_text = (
-        "🚀 TAJEXPRESS – каргои боваринок ва бехатар барои овардани борхои Шумо!\n\n"
-        "📦 Борҳои худро зуд ва бехатар фиристед\n"
-        "⏱ Дархостҳоро осон ва зуд иҷро намоед\n"
-        "🇨🇳 Суроғаи қулай дар Чин барои харидҳои шумо\n\n"
-        "Менюи зерро интихоб кунед:"
-    )
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    for row in MAIN_MENU:
-        markup.add(*[types.KeyboardButton(text) for text in row])
-    bot.send_message(chat_id, welcome_text, reply_markup=markup)
+    send_main_menu(message.chat.id)
 
-# -----------------------------
 # Основной обработчик
 # -----------------------------
 @bot.message_handler(func=lambda m: True)
@@ -136,9 +123,7 @@ def main_handler(message):
     else:
         send_main_menu(chat_id)
 
-# -----------------------------
-# Доставка
-# -----------------------------
+# ================== Доставка ==================
 def delivery_step_name(message):
     chat_id = message.chat.id
     user_data[chat_id] = {"name": message.text}
@@ -156,7 +141,7 @@ def delivery_step_phone(message):
     user_data[chat_id]["phone"] = message.text
     data = user_data[chat_id]
     delivery_text = (
-        f"📦 *Новая доставка*\n"
+        f"📦 *НОВАЯ ЗАЯВКА НА ДОСТАВКУ*\n"
         f"Имя: {data['name']}\n"
         f"Адрес: {data['address']}\n"
         f"Телефон: {data['phone']}"
@@ -168,7 +153,6 @@ def delivery_step_phone(message):
         bot.send_message(chat_id, f"Хатогии ирсол: {e}")
     send_main_menu(chat_id)
 
-# -----------------------------
 # Гирифтани адрес
 # -----------------------------
 def address_step_name(message):
@@ -196,39 +180,55 @@ def address_step_phone(message):
     bot.send_message(chat_id, full_address)
     send_main_menu(chat_id)
 
-# -------------------- АДМИН: ДОБАВИТЬ ТРЕК-КОД --------------------
-@bot.message_handler(commands=["add_track"])
-def add_track(message):
-    if message.from_user.id not in ADMINS:
-        bot.send_message(message.chat.id, "❌ У вас нет доступа")
-        return
 
-    msg = bot.send_message(message.chat.id, "Введите трек-код:")
-    bot.register_next_step_handler(msg, add_track_step)
-
-
-def add_track_step(message):
-    track = message.text.strip().upper()
-    msg = bot.send_message(message.chat.id, f"Введите статус для {track}:")
-    bot.register_next_step_handler(msg, lambda m: save_track(track, m))
-
-
-def save_track(track, message):
-    status = message.text.strip()
-    track_codes[track] = status
-    bot.send_message(message.chat.id, f"✅ Трек-код {track} добавлен.\nСтатус: {status}")
-
-
-# -------------------- ПРОВЕРКА ТРЕК-КОДА --------------------
+# ================== ТРЕК-КОДА  ==================
 def track_step(message):
     chat_id = message.chat.id
     code = message.text.strip().upper()
+    status = "Трек-код не найден"
 
-    status = track_codes.get(code, "❌ Трек-код не найден")
+    if sheet:
+        try:
+            records = sheet.get_all_records()
+            for row in records:
+                if str(row.get("TrackCode")).upper() == code:
+                    status = row.get("Status", status)
+                    break
+        except Exception as e:
+            status = f"Ошибка чтения таблицы: {e}"
 
-    bot.send_message(chat_id, f"📦 Статус {code}:\n{status}")
+    bot.send_message(chat_id, f"Статус груза {code}:\n{status}")
     send_main_menu(chat_id)
 
+# ================== ADMIN ТРЕК-КОДА  ==================
+@bot.message_handler(commands=["add_track"])
+def add_track(message):
+    if message.from_user.id not in ADMINS:
+        bot.send_message(message.chat.id, "❌ Доступ запрещен.")
+        return
+    msg = bot.send_message(message.chat.id, "Введите трек-код:")
+    bot.register_next_step_handler(msg, add_track_step)
+
+def add_track_step(message):
+    track_code = message.text.strip().upper()
+    msg = bot.send_message(message.chat.id, f"Введите статус для {track_code}:")
+    bot.register_next_step_handler(msg, lambda m: save_track_status(track_code, m))
+
+def save_track_status(track_code, message):
+    status = message.text.strip()
+    if sheet:
+        try:
+            # ищем существующую строку
+            cell = sheet.find(track_code)
+            if cell:
+                sheet.update_cell(cell.row, 2, status)
+            else:
+                sheet.append_row([track_code, status])
+            bot.send_message(message.chat.id, f"✅ Трек-код {track_code} добавлен/обновлен.")
+        except Exception as e:
+            bot.send_message(message.chat.id, f"Ошибка работы с таблицей: {e}")
+    else:
+        bot.send_message(message.chat.id, f"⚠ Таблица не подключена, нельзя сохранить трек-код.")
 
 # -----------------------------
 # Контакты — звонок и Telegram
@@ -268,9 +268,7 @@ def show_contacts(chat_id):
     )
     bot.send_message(chat_id, info_text)
 
-# -----------------------------
-# Запуск бота
-# -----------------------------
+# ================== RUN BOT ==================
 if __name__ == "__main__":
-    print("Бот запущен...")
+    print("Bot started...")
     bot.infinity_polling()
