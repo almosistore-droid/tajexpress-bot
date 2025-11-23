@@ -195,42 +195,40 @@ def address_step_phone(message):
 
     bot.send_message(chat_id, full_address)
     send_main_menu(chat_id)
-# -----------------------------
-# Проверка трек-кода
-# -----------------------------
-def track_step(message):
-    chat_id = message.chat.id
-    code = message.text.strip().upper()
-    track_codes = load_track_codes()
-    status = track_codes.get(code, "Трек-код ёфт нашуд ❌")
-    bot.send_message(chat_id, f"Статус ({code}): {status}")
-    send_main_menu(chat_id)
 
-# -----------------------------
-# Админ: добавление трек-кода
-# -----------------------------
+# -------------------- АДМИН: ДОБАВИТЬ ТРЕК-КОД --------------------
 @bot.message_handler(commands=["add_track"])
 def add_track(message):
     if message.from_user.id not in ADMINS:
-        bot.send_message(message.chat.id, "❌ Дастрасӣ маҳдуд аст.")
+        bot.send_message(message.chat.id, "❌ У вас нет доступа")
         return
-    msg = bot.send_message(message.chat.id, "Трек-кодро ворид кунед:")
+
+    msg = bot.send_message(message.chat.id, "Введите трек-код:")
     bot.register_next_step_handler(msg, add_track_step)
 
-def add_track_step(message):
-    track_code = message.text.strip().upper()
-    msg = bot.send_message(message.chat.id, f"Статус барои {track_code}:")
-    bot.register_next_step_handler(msg, lambda m: save_track_status(track_code, m))
 
-def save_track_status(track_code, message):
-    track_codes = load_track_codes()
-    track_codes[track_code] = message.text.strip()
-    save_track_codes(track_codes)
-    bot.send_message(message.chat.id, f"✅ Трек-код {track_code} навсозӣ шуд.")
-    try:
-        bot.send_message(DELIVERY_GROUP_ID, f"Трек-код {track_code} навсозӣ шуд.")
-    except:
-        pass
+def add_track_step(message):
+    track = message.text.strip().upper()
+    msg = bot.send_message(message.chat.id, f"Введите статус для {track}:")
+    bot.register_next_step_handler(msg, lambda m: save_track(track, m))
+
+
+def save_track(track, message):
+    status = message.text.strip()
+    track_codes[track] = status
+    bot.send_message(message.chat.id, f"✅ Трек-код {track} добавлен.\nСтатус: {status}")
+
+
+# -------------------- ПРОВЕРКА ТРЕК-КОДА --------------------
+def track_step(message):
+    chat_id = message.chat.id
+    code = message.text.strip().upper()
+
+    status = track_codes.get(code, "❌ Трек-код не найден")
+
+    bot.send_message(chat_id, f"📦 Статус {code}:\n{status}")
+    send_main_menu(chat_id)
+
 
 # -----------------------------
 # Контакты — звонок и Telegram
