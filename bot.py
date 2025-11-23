@@ -30,24 +30,33 @@ ADMINS = [1324431208]  # вставьте сюда id админа
 
 # ================== GOOGLE SHEETS ==================
 GOOGLE_CREDS_JSON = os.getenv("GOOGLE_CREDENTIALS_JSON")
+
 if not GOOGLE_CREDS_JSON:
-    raise RuntimeError("GOOGLE_CREDENTIALS_JSON не определен!")
+    raise RuntimeError("❌ GOOGLE_CREDENTIALS_JSON не определен в окружении!")
 
-scope = ["https://spreadsheets.google.com/feeds",
-         "https://www.googleapis.com/auth/spreadsheets",
-         "https://www.googleapis.com/auth/drive.file",
-         "https://www.googleapis.com/auth/drive"]
+# Если Render обрезал переносы — восстанавливаем формат
+GOOGLE_CREDS_JSON = GOOGLE_CREDS_JSON.replace("\\n", "\n").strip()
 
-# Если GOOGLE_CREDS_JSON хранится как текст (Render Secret)
-creds_dict = json.loads(GOOGLE_CREDS_JSON)
+try:
+    creds_dict = json.loads(GOOGLE_CREDS_JSON)
+except Exception as e:
+    raise RuntimeError(f"❌ Ошибка загрузки Google JSON: {e}\n"
+                       f"Содержимое переменной начинается так:\n"
+                       f"{GOOGLE_CREDS_JSON[:50]}...")
+
+scope = [
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive"
+]
+
 creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
 gc = gspread.authorize(creds)
 
-SHEET_NAME = "Tracks"  # Название вашей Google Sheet
+SHEET_NAME = "Tracks"
 try:
     sheet = gc.open(SHEET_NAME).sheet1
 except Exception as e:
-    print("Ошибка подключения к Google Sheet:", e)
+    print("❌ Ошибка подключения к таблице:", e)
     sheet = None
 
 # ================== MENU ==================
