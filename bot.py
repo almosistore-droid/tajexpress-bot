@@ -318,9 +318,9 @@ def show_contacts(chat_id):
     "Барои маълумоти бештар ба Instagram-и мо ворид шавед: "
     "https://www.instagram.com/taj_express01?igsh=ZmcxdHE4eXI0aWc1"
 )
-bot.send_message(chat_id, info_text)
-    bot.send_message(chat_id, info_text)
-
+def send_info(chat_id, info_text):
+    if info_text:
+        bot.send_message(chat_id, info_text)
 # ================== Настройка webhook ==================
 if __name__ == "__main__":
     # Для Render: установить webhook один раз через Telegram API
