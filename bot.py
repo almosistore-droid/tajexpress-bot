@@ -198,7 +198,8 @@ def track_step(message):
 
     bot.send_message(chat_id, f"Статус груза {code}:\n{status}")
     send_main_menu(chat_id)
-
+print("Код из сообщения:", code)
+print("Все записи:", records)
 # ================== Загрузка всех трек-кодов в память ==================
 # (для ускоренного поиска, если много данных)
 track_codes_cache = {}
