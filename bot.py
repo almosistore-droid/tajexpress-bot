@@ -319,7 +319,10 @@ def show_contacts(chat_id):
     )
     bot.send_message(chat_id, info_text)
 
-# ================== RUN BOT ==================
+# ================== Настройка webhook ==================
 if __name__ == "__main__":
-    print("Bot started...")
-    bot.infinity_polling()
+    # Для Render: установить webhook один раз через Telegram API
+    WEBHOOK_URL = f"https://<your-app-url>/{TOKEN}"
+    bot.remove_webhook()
+    bot.set_webhook(url=WEBHOOK_URL)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
