@@ -312,11 +312,13 @@ def show_contacts(chat_id):
     bot.send_message(chat_id, text, reply_markup=markup, parse_mode="Markdown")
 
     info_text = (
-        "📞 Тамос: 8:00–17:30\n"
-        "КАРГОИ БОВАРИНОК 🚚✅\n"
-        "Мӯҳлати доставка: 15–25 рӯз (мо одатан борро пеш аз муҳлат мебиёрем)"
-        "Барои маълумоти бештар ба инстаграми мо ворид шавед https://www.instagram.com/taj_express01?igsh=ZmcxdHE4eXI0aWc1"
-    )
+    "📞 Тамос: 8:00–17:30\n"
+    "КАРГОИ БОВАРИНОК 🚚✅\n"
+    "Мӯҳлати доставка: 15–25 рӯз (мо одатан борро пеш аз муҳлат мебиёрем)\n\n"
+    "Барои маълумоти бештар ба Instagram-и мо ворид шавед: "
+    "https://www.instagram.com/taj_express01?igsh=ZmcxdHE4eXI0aWc1"
+)
+bot.send_message(chat_id, info_text)
     bot.send_message(chat_id, info_text)
 
 # ================== Настройка webhook ==================
