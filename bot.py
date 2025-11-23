@@ -195,6 +195,22 @@ def track_step(message):
     bot.send_message(chat_id, f"Статус груза {code}:\n{status}")
     send_main_menu(chat_id)
 
+def load_track_codes():
+    import gspread
+    from oauth2client.service_account import ServiceAccountCredentials
+
+    try:
+        scope = ["https://spreadsheets.google.com/feeds",'https://www.googleapis.com/auth/drive']
+        creds = ServiceAccountCredentials.from_json_keyfile_name("taj-express-478705-b4ad615749f9.json", scope)
+        client = gspread.authorize(creds)
+        sheet = client.open("Имя_Таблицы").sheet1
+        data = sheet.get_all_records()
+        print("Загруженные данные:", data)  # <- временно
+        return {row["Code"]: row["Status"] for row in data}
+    except Exception as e:
+        print("Ошибка подключения:", e)
+        return {}
+
 # ================== ADMIN ТРЕК-КОДА ==================
 @bot.message_handler(commands=["add_track"])
 def add_track(message):
