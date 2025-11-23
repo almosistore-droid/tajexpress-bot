@@ -6,8 +6,10 @@ from telebot.apihelper import ApiTelegramException
 from dotenv import load_dotenv
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
+from flask import Flask
 
 load_dotenv()
+app = Flask(__name__)
 
 # ================== TELEGRAM BOT ==================
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
@@ -218,7 +220,8 @@ def track_step(message):
         try:
             records = sheet.get_all_records()
             for row in records:
-                if str(row.get("Code", "")).upper() == code:
+                # проверка и трек-кода, и UserID
+                if str(row.get("Code", "")).upper() == code and str(row.get("UserID", "")) == str(chat_id):
                     info_text = (
                         f"🔢 Трек-код: {row.get('Code', '-')}\n"
                         f"📦 Статус: {row.get('Status', '-')}\n"
@@ -268,36 +271,14 @@ def save_track_status(track_code, message):
                 users_sheet = gc.open("Tracks").worksheet("Users")
                 users = users_sheet.get_all_records()
                 for user in users:
-                    chat_id = int(user["ChatID"])
+                    chat_id_user = int(user["ChatID"])
                     name = user.get("Name", "")
-                    bot.send_message(chat_id, f"✅ {name}, ваш трек-код {track_code} доставлен!")
+                    bot.send_message(chat_id_user, f"✅ {name}, ваш трек-код {track_code} доставлен!")
             except Exception as e:
                 print(f"Ошибка уведомления пользователей: {e}")
 
     except Exception as e:
         bot.send_message(message.chat.id, f"⚠ Ошибка работы с таблицей: {e}")
-# Пример уведомления о доставке
-def notify_user_delivery(chat_id, track_code, name):
-    try:
-        # Создаем inline-кнопку
-        markup = types.InlineKeyboardMarkup()
-        markup.add(types.InlineKeyboardButton("🚚 Доставка", callback_data="start_delivery"))
-
-        # Отправляем сообщение с кнопкой
-        bot.send_message(
-            chat_id,
-            f"✅ {name}, ваш трек-код {track_code} обновлён!\nВы можете оформить новую доставку ниже.",
-            reply_markup=markup
-        )
-    except Exception as e:
-        print(f"Ошибка уведомления: {e}")
-
-# Обработчик нажатия на кнопку
-@bot.callback_query_handler(func=lambda call: call.data == "start_delivery")
-def callback_start_delivery(call):
-    chat_id = call.message.chat.id
-    msg = bot.send_message(chat_id, "Номи худро ворид кунед:")
-    bot.register_next_step_handler(msg, delivery_step_name)
 
 # ================== Контакты ==================
 def show_contacts(chat_id):
@@ -311,20 +292,10 @@ def show_contacts(chat_id):
 
     bot.send_message(chat_id, text, reply_markup=markup, parse_mode="Markdown")
 
-    info_text = (
-    "📞 Тамос: 8:00–17:30\n"
-    "КАРГОИ БОВАРИНОК 🚚✅\n"
-    "Мӯҳлати доставка: 15–25 рӯз (мо одатан борро пеш аз муҳлат мебиёрем)\n\n"
-    "Барои маълумоти бештар ба Instagram-и мо ворид шавед: "
-    "https://www.instagram.com/taj_express01?igsh=ZmcxdHE4eXI0aWc1"
-)
-def send_info(chat_id, info_text):
-    if info_text:
-        bot.send_message(chat_id, info_text)
 # ================== Настройка webhook ==================
 if __name__ == "__main__":
-    # Для Render: установить webhook один раз через Telegram API
+    # Установите свой URL
     WEBHOOK_URL = f"https://<your-app-url>/{TOKEN}"
     bot.remove_webhook()
-    bot.set_webhook(url=WEBHOOK_URL)
+    bot.set_webhook(url=https://tajexpress-bot.onrender.com)
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
