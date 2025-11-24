@@ -292,9 +292,13 @@ def show_contacts(chat_id):
 
     bot.send_message(chat_id, text, reply_markup=markup, parse_mode="Markdown")
 
-# ================== Настройка webhook ==================
 if __name__ == "__main__":
-    WEBHOOK_URL = ...
-    bot.remove_webhook()
-    bot.set_webhook(url=WEBHOOK_URL)
-    app.run(...)
+    try:
+        bot.remove_webhook()
+        bot.set_webhook(url=WEBHOOK_URL)
+        print("Webhook установлен:", WEBHOOK_URL)
+    except Exception as e:
+        print("Ошибка установки webhook:", e)
+
+    port = int(os.environ.get("PORT", 10000))  # правильный порт для Render
+    app.run(host="0.0.0.0", port=port)
