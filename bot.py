@@ -220,15 +220,17 @@ def track_step(message):
         try:
             records = sheet.get_all_records()
             for row in records:
-                # проверка и трек-кода, и UserID
-                if str(row.get("Code", "")).upper() == code and str(row.get("UserID", "")) == str(chat_id):
+                # Используем правильные названия колонок
+                if str(row.get("Track", "")).upper() == code and str(row.get("UserID", "")) == str(chat_id):
                     info_text = (
-                        f"🔢 Трек-код: {row.get('Code', '-')}\n"
+                        f"🔢 Трек-код: {row.get('Track', '-')}\n"
                         f"📦 Статус: {row.get('Status', '-')}\n"
                         f"📅 Дата: {row.get('Date', '-')}\n"
                         f"👤 Имя клиента: {row.get('Name', '-')}\n"
-                        f"📞 Номер: {row.get('Number', '-')}\n"
-                        f"🆔 Код: {row.get('Cod', '-')}"
+                        f"📞 Номер: {row.get('ClientCode', '-')}\n"
+                        f"⚖ Вес: {row.get('Weight(kg)', '-')}\n"
+                        f"💰 Цена/кг: {row.get('Price/kg', '-')}\n"
+                        f"💵 Всего: {row.get('Total', '-')}"
                     )
                     break
         except Exception as e:
