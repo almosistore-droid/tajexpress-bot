@@ -220,8 +220,11 @@ def track_step(message):
         try:
             records = sheet.get_all_records()
             for row in records:
-                # Используем правильные названия колонок
-                if str(row.get("Track", "")).upper() == code and str(row.get("UserID", "")) == str(chat_id):
+                track = str(row.get("Track", "")).upper()
+                user_id = str(row.get("UserID", ""))
+
+                # --- УСЛОВИЕ 1: точное совпадение по треку и userID
+                if track == code and user_id == str(chat_id):
                     info_text = (
                         f"🔢 Трек-код: {row.get('Track', '-')}\n"
                         f"📦 Статус: {row.get('Status', '-')}\n"
@@ -233,12 +236,26 @@ def track_step(message):
                         f"💵 Всего: {row.get('Total', '-')}"
                     )
                     break
+
+                # --- УСЛОВИЕ 2: если UserID пустой — ищем только по треку
+                if track == code and user_id == "":
+                    info_text = (
+                        f"🔢 Трек-код: {row.get('Track', '-')}\n"
+                        f"📦 Статус: {row.get('Status', '-')}\n"
+                        f"📅 Дата: {row.get('Date', '-')}\n"
+                        f"👤 Имя клиента: {row.get('Name', '-')}\n"
+                        f"📞 Номер: {row.get('ClientCode', '-')}\n"
+                        f"⚖ Вес: {row.get('Weight(kg)', '-')}\n"
+                        f"💰 Цена/кг: {row.get('Price/kg', '-')}\n"
+                        f"💵 Всего: {row.get('Total', '-')}"
+                    )
+                    break
+
         except Exception as e:
             info_text = f"Ошибка чтения таблицы: {e}"
 
     bot.send_message(chat_id, info_text)
     send_main_menu(chat_id)
-
 # ================== ADMIN ТРЕК-КОДА ==================
 @bot.message_handler(commands=["add_track"])
 def add_track(message):
