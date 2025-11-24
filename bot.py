@@ -219,26 +219,18 @@ def track_step(message):
     if sheet:
         try:
             records = sheet.get_all_records()
-            for row in records:
+            for idx, row in enumerate(records, start=2):  # start=2 из-за заголовка
                 track = str(row.get("Track", "")).upper()
                 user_id = str(row.get("UserID", ""))
 
-                # --- УСЛОВИЕ 1: точное совпадение по треку и userID
-                if track == code and user_id == str(chat_id):
-                    info_text = (
-                        f"🔢 Трек-код: {row.get('Track', '-')}\n"
-                        f"📦 Статус: {row.get('Status', '-')}\n"
-                        f"📅 Дата: {row.get('Date', '-')}\n"
-                        f"👤 Имя клиента: {row.get('Name', '-')}\n"
-                        f"📞 Номер: {row.get('ClientCode', '-')}\n"
-                        f"⚖ Вес: {row.get('Weight(kg)', '-')}\n"
-                        f"💰 Цена/кг: {row.get('Price/kg', '-')}\n"
-                        f"💵 Всего: {row.get('Total', '-')}"
-                    )
-                    break
+                if track == code:
+                    # --- Заполняем UserID если пуст
+                    if user_id == "":
+                        try:
+                            sheet.update_cell(idx, 9, str(chat_id))  # 9-й столбец = UserID
+                        except Exception as e:
+                            print(f"Ошибка обновления UserID: {e}")
 
-                # --- УСЛОВИЕ 2: если UserID пустой — ищем только по треку
-                if track == code and user_id == "":
                     info_text = (
                         f"🔢 Трек-код: {row.get('Track', '-')}\n"
                         f"📦 Статус: {row.get('Status', '-')}\n"
@@ -256,6 +248,7 @@ def track_step(message):
 
     bot.send_message(chat_id, info_text)
     send_main_menu(chat_id)
+
 # ================== ADMIN ТРЕК-КОДА ==================
 @bot.message_handler(commands=["add_track"])
 def add_track(message):
