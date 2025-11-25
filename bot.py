@@ -83,6 +83,9 @@ def main_handler(message):
     chat_id = message.chat.id
     text = message.text
 
+     # Отменяем все предыдущие step_handler для этого пользователя
+    bot.clear_step_handler_by_chat_id(chat_id)
+    
     if text == BTN_REGISTER:
         msg = bot.send_message(chat_id, "Введите ваше имя:")
         bot.register_next_step_handler(msg, register_step_name)
@@ -91,7 +94,7 @@ def main_handler(message):
         msg = bot.send_message(chat_id, "Номи худро ворид кунед:")
         bot.register_next_step_handler(msg, delivery_step_name)
 
-    elif text == BTN_ADDRESS:
+    if text == BTN_ADDRESS:
         msg = bot.send_message(chat_id, "Номи худро ворид кунед (Танҳо ҳарфҳои англисӣ):")
         bot.register_next_step_handler(msg, address_step_name)
 
@@ -102,7 +105,7 @@ def main_handler(message):
             "• Аз 0.1кг то 200кг — 3$"
         )
 
-    elif text == BTN_TRACK:
+  elif text == BTN_TRACK:
         msg = bot.send_message(chat_id, "Треккоди худро равон кунед:")
         bot.register_next_step_handler(msg, track_step)
 
