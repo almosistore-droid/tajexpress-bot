@@ -68,7 +68,6 @@ def send_main_menu(chat_id):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     for row in MAIN_MENU:
         markup.add(*[types.KeyboardButton(text) for text in row])
-    bot.send_message(chat_id, "Выберите пункт меню:", reply_markup=markup)
 
 # ================== START ==================
 @bot.message_handler(commands=["start", "help"])
