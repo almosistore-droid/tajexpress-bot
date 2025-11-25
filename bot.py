@@ -1,34 +1,17 @@
 import os
 import json
-import telebot
-from telebot import types
+from telebot import TeleBot, types
 from telebot.apihelper import ApiTelegramException
 from dotenv import load_dotenv
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-from flask import Flask
-
-load_dotenv()
-app = Flask(__name__)
-
-# ================== TELEGRAM BOT ==================
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 if not TOKEN:
-    raise RuntimeError("TELEGRAM_BOT_TOKEN не определен!")
+    raise RuntimeError("TELEGRAM_BOT_TOKEN не задан!")
 
-bot = telebot.TeleBot(TOKEN, threaded=False)
-
-try:
-    DELIVERY_GROUP_ID = int(os.getenv("DELIVERY_GROUP_ID", "0"))
-except ValueError:
-    DELIVERY_GROUP_ID = 0
-
-# Хранилища данных
-user_data = {}
-
-# Админы
-ADMINS = [1324431208]  # вставьте сюда id админа
-
+bot = TeleBot(TOKEN)
+# ================== TELEGRAM BOT ==================
+bot = TeleBot(TOKEN, threaded=False)
 # ================== GOOGLE SHEETS ==================
 GOOGLE_CREDS_PATH = "taj-express-478705-b4ad615749f9.json"
 if not os.path.exists(GOOGLE_CREDS_PATH):
@@ -304,7 +287,7 @@ def show_contacts(chat_id):
 
     bot.send_message(chat_id, text, reply_markup=markup, parse_mode="Markdown")
 
-# ================== RUN BOT ==================
+# ===================== ЗАПУСК =====================
 if __name__ == "__main__":
-    print("Bot started...")
+    print("Бот запущен в режиме polling...")
     bot.infinity_polling()
