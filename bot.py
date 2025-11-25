@@ -13,7 +13,7 @@ TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 if not TOKEN:
     raise RuntimeError("TELEGRAM_BOT_TOKEN не задан!")
 
-bot = TeleBot(TOKEN, threaded=False)
+bot = TeleBot(TOKEN, threaded=True)
 
 # ================== Админы и переменные ==================
 ADMINS = [1324431208]  # сюда id админа
