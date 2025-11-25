@@ -33,7 +33,7 @@ try:
 except Exception as e:
     print("❌ Ошибка подключения к таблице:", e)
     sheet = None
-
+bot.clear_step_handler_by_chat_id(chat_id)
 # ================== MENU ==================
 BTN_DELIVERY = "🚚 Доставка"
 BTN_ADDRESS = "🇨🇳 Гирифтани адрес ва код"
