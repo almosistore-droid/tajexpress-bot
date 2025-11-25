@@ -5,13 +5,25 @@ from telebot.apihelper import ApiTelegramException
 from dotenv import load_dotenv
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
+
+load_dotenv()
+
+# ================== TELEGRAM BOT ==================
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 if not TOKEN:
     raise RuntimeError("TELEGRAM_BOT_TOKEN не задан!")
 
-bot = TeleBot(TOKEN)
-# ================== TELEGRAM BOT ==================
 bot = TeleBot(TOKEN, threaded=False)
+
+# ================== Админы и переменные ==================
+ADMINS = [1324431208]  # сюда id админа
+user_data = {}
+
+try:
+    DELIVERY_GROUP_ID = int(os.getenv("DELIVERY_GROUP_ID", "0"))
+except ValueError:
+    DELIVERY_GROUP_ID = 0
+
 # ================== GOOGLE SHEETS ==================
 GOOGLE_CREDS_PATH = "taj-express-478705-b4ad615749f9.json"
 if not os.path.exists(GOOGLE_CREDS_PATH):
@@ -33,7 +45,7 @@ try:
 except Exception as e:
     print("❌ Ошибка подключения к таблице:", e)
     sheet = None
-bot.clear_step_handler_by_chat_id(chat_id)
+
 # ================== MENU ==================
 BTN_DELIVERY = "🚚 Доставка"
 BTN_ADDRESS = "🇨🇳 Гирифтани адрес ва код"
@@ -62,8 +74,6 @@ def send_main_menu(chat_id):
 @bot.message_handler(commands=["start", "help"])
 def start_handler(message):
     chat_id = message.chat.id
-
-    # Отправляем приветственное сообщение
     welcome_text = (
         "🚀 TAJEXPRESS – каргои боваринок ва бехатар барои овардани борхои Шумо!\n\n"
         "📦 Борҳои худро зуд ва бехатар фиристед\n"
@@ -72,10 +82,7 @@ def start_handler(message):
         "Менюи зерро интихоб кунед:"
     )
     bot.send_message(chat_id, welcome_text)
-
-    # Показываем главное меню
     send_main_menu(chat_id)
-
 
 # ================== MAIN HANDLER ==================
 @bot.message_handler(func=lambda m: True)
@@ -83,9 +90,9 @@ def main_handler(message):
     chat_id = message.chat.id
     text = message.text
 
-     # Отменяем все предыдущие step_handler для этого пользователя
+    # Отменяем предыдущие step_handler
     bot.clear_step_handler_by_chat_id(chat_id)
-    
+
     if text == BTN_REGISTER:
         msg = bot.send_message(chat_id, "Введите ваше имя:")
         bot.register_next_step_handler(msg, register_step_name)
@@ -94,7 +101,7 @@ def main_handler(message):
         msg = bot.send_message(chat_id, "Номи худро ворид кунед:")
         bot.register_next_step_handler(msg, delivery_step_name)
 
-    if text == BTN_ADDRESS:
+    elif text == BTN_ADDRESS:
         msg = bot.send_message(chat_id, "Номи худро ворид кунед (Танҳо ҳарфҳои англисӣ):")
         bot.register_next_step_handler(msg, address_step_name)
 
@@ -105,7 +112,7 @@ def main_handler(message):
             "• Аз 0.1кг то 200кг — 3$"
         )
 
-  elif text == BTN_TRACK:
+    elif text == BTN_TRACK:
         msg = bot.send_message(chat_id, "Треккоди худро равон кунед:")
         bot.register_next_step_handler(msg, track_step)
 
@@ -155,7 +162,7 @@ def register_step_phone(message):
     else:
         users_sheet.append_row([chat_id, user_data[chat_id]["name"], user_data[chat_id]["phone"]])
 
-    bot.send_message(chat_id, f"✅ Регистрация завершена!\nИмя: {user_data[chat_id]['name']}\nТел: {user_data[chat_id]['phone']}")
+    bot.send_message(chat_id, f"✅ Бақайдгирӣ анҷом ёфт!\nИмя: {user_data[chat_id]['name']}\nТел: {user_data[chat_id]['phone']}")
     send_main_menu(chat_id)
 
 # ================== Доставка ==================
@@ -168,7 +175,7 @@ def delivery_step_name(message):
 def delivery_step_address(message):
     chat_id = message.chat.id
     user_data[chat_id]["address"] = message.text
-    msg = bot.send_message(chat_id, "Рақами телефон:")
+    msg = bot.send_message(chat_id, "Рақами телефони худро ворид кунед::")
     bot.register_next_step_handler(msg, delivery_step_phone)
 
 def delivery_step_phone(message):
@@ -192,7 +199,7 @@ def delivery_step_phone(message):
 def address_step_name(message):
     chat_id = message.chat.id
     if not message.text.isascii():
-        msg = bot.send_message(chat_id, "❌ Танҳо ҳарфҳои англисӣ нависед!")
+        msg = bot.send_message(chat_id, "❌ Танҳо бо ҳарфҳои англисӣ нависед!")
         bot.register_next_step_handler(msg, address_step_name)
         return
     user_data[chat_id] = {"name": message.text}
@@ -208,7 +215,8 @@ def address_step_phone(message):
     )
     bot.send_message(chat_id, full_address)
     send_main_menu(chat_id)
-# ================== ТРЕК-КОДА ==================
+
+# ================== Трек-код ==================
 def track_step(message):
     chat_id = message.chat.id
     code = message.text.strip().upper()
@@ -218,15 +226,13 @@ def track_step(message):
     if sheet:
         try:
             records = sheet.get_all_records()
-            for idx, row in enumerate(records, start=2):  # start=2 из-за заголовка
+            for idx, row in enumerate(records, start=2):
                 track = str(row.get("Track", "")).upper()
                 user_id = str(row.get("UserID", ""))
-
                 if track == code:
-                    # --- Заполняем UserID если пуст
                     if user_id == "":
                         try:
-                            sheet.update_cell(idx, 9, str(chat_id))  # 9-й столбец = UserID
+                            sheet.update_cell(idx, 9, str(chat_id))
                         except Exception as e:
                             print(f"Ошибка обновления UserID: {e}")
 
@@ -248,7 +254,7 @@ def track_step(message):
     bot.send_message(chat_id, info_text)
     send_main_menu(chat_id)
 
-# ================== ADMIN ТРЕК-КОДА ==================
+# ================== Админ Трек-код ==================
 @bot.message_handler(commands=["add_track"])
 def add_track(message):
     if message.from_user.id not in ADMINS:
@@ -276,7 +282,6 @@ def save_track_status(track_code, message):
             sheet.append_row([track_code, status])
             bot.send_message(message.chat.id, f"✅ Трек-код {track_code} добавлен.")
 
-        # Уведомление пользователям при доставке
         if status.lower() == "доставлен":
             try:
                 users_sheet = gc.open("Tracks").worksheet("Users")
@@ -295,12 +300,10 @@ def save_track_status(track_code, message):
 def show_contacts(chat_id):
     text = "📞 *Ракамхо мо*\n\n"
     markup = types.InlineKeyboardMarkup(row_width=1)
-
     markup.add(types.InlineKeyboardButton("📱 +992 985 171 732", url="https://t.me/zubaidullo_tjk"))
     markup.add(types.InlineKeyboardButton("📱 +992 933 055 707", url="https://t.me/zubaidullo_tjk"))
     markup.add(types.InlineKeyboardButton("📱 +992 007 282 626", url="https://t.me/Fayoz_7707"))
     markup.add(types.InlineKeyboardButton("📢 Канал Telegram", url="https://t.me/TAJEXPRESSCARGO"))
-
     bot.send_message(chat_id, text, reply_markup=markup, parse_mode="Markdown")
 
 # ===================== ЗАПУСК =====================
