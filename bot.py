@@ -184,20 +184,23 @@ def register_step_phone(message):
     send_main_menu(chat_id)
 
 def save_user(chat_id):
-    try:
-        users_sheet = gc.open("Tracks").worksheet("Users")
-    except gspread.WorksheetNotFound:
-        users_sheet = gc.open("Tracks").add_worksheet(title="Users", rows="1000", cols="3")
-        users_sheet.append_row(["ChatID", "Name", "Phone"])
+    def worker():
+        try:
+            users_sheet = gc.open("Tracks").worksheet("Users")
+        except gspread.WorksheetNotFound:
+            users_sheet = gc.open("Tracks").add_worksheet(title="Users", rows="1000", cols="3")
+            users_sheet.append_row(["ChatID", "Name", "Phone"])
 
-    if chat_id in user_cache:
-        row = user_cache[chat_id].get("row", None)
-        if row:
-            users_sheet.update(f"B{row}", user_data[chat_id]["name"])
-            users_sheet.update(f"C{row}", user_data[chat_id]["phone"])
-    else:
-        users_sheet.append_row([chat_id, user_data[chat_id]["name"], user_data[chat_id]["phone"]])
-    user_cache[chat_id] = {"Name": user_data[chat_id]["name"], "Phone": user_data[chat_id]["phone"]}
+        if chat_id in user_cache:
+            row = user_cache[chat_id].get("row")
+            if row:
+                users_sheet.update(f"B{row}", user_data[chat_id]["name"])
+                users_sheet.update(f"C{row}", user_data[chat_id]["phone"])
+        else:
+            users_sheet.append_row([chat_id, user_data[chat_id]["name"], user_data[chat_id]["phone"]])
+        user_cache[chat_id] = {"Name": user_data[chat_id]["name"], "Phone": user_data[chat_id]["phone"]}
+
+    threading.Thread(target=worker, daemon=True).start()
 
 # ================== Доставка ==================
 def delivery_step_name(message):
@@ -275,5 +278,5 @@ def show_contacts(chat_id):
 
 # ===================== ЗАПУСК =====================
 if __name__ == "__main__":
-    print("Бот запущен в режиме polling...")
+    print("Бот запущен...")
     bot.infinity_polling()
