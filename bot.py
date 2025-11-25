@@ -61,7 +61,21 @@ def send_main_menu(chat_id):
 # ================== START ==================
 @bot.message_handler(commands=["start", "help"])
 def start_handler(message):
-    send_main_menu(message.chat.id)
+    chat_id = message.chat.id
+
+    # Отправляем приветственное сообщение
+    welcome_text = (
+        "🚀 TAJEXPRESS – каргои боваринок ва бехатар барои овардани борхои Шумо!\n\n"
+        "📦 Борҳои худро зуд ва бехатар фиристед\n"
+        "⏱️ Дархостҳоро осон ва зуд иҷро намоед\n"
+        "🇨🇳 Суроғаи қулай дар Чин барои харидҳои шумо\n\n"
+        "Менюи зерро интихоб кунед:"
+    )
+    bot.send_message(chat_id, welcome_text)
+
+    # Показываем главное меню
+    send_main_menu(chat_id)
+
 
 # ================== MAIN HANDLER ==================
 @bot.message_handler(func=lambda m: True)
