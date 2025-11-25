@@ -5,6 +5,9 @@ from telebot.apihelper import ApiTelegramException
 from dotenv import load_dotenv
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
+import time
+import threading
+UPDATE_INTERVAL = 5 * 60  # 5 минут (можно изменить)
 
 load_dotenv()
 
@@ -83,6 +86,42 @@ def start_handler(message):
     bot.send_message(chat_id, welcome_text)
     send_main_menu(chat_id)
 
+# ======== Кэш треков и пользователей ========
+track_cache = {}  # {track_code: {Status, Name, ...}}
+user_cache = {}   # {chat_id: {Name, Phone}}
+
+def load_cache():
+    global track_cache, user_cache
+    if sheet:
+        try:
+            records = sheet.get_all_records()
+            track_cache = {str(r["Track"]).upper(): r for r in records}
+        except Exception as e:
+            print(f"Ошибка загрузки треков в кэш: {e}")
+    try:
+        users_sheet = gc.open("Tracks").worksheet("Users")
+        user_records = users_sheet.get_all_records()
+        user_cache = {int(r["ChatID"]): r for r in user_records}
+    except Exception as e:
+        print(f"Ошибка загрузки пользователей в кэш: {e}")
+
+load_cache()
+
+def update_track_cache_periodically():
+    """Фоновая функция для обновления кэша треков каждые N минут"""
+    global track_cache
+    while True:
+        try:
+            if sheet:
+                records = sheet.get_all_records()
+                track_cache = {str(r["Track"]).upper(): r for r in records}
+                print(f"[INFO] Кэш треков обновлен. Всего треков: {len(track_cache)}")
+        except Exception as e:
+            print(f"[ERROR] Не удалось обновить кэш треков: {e}")
+        time.sleep(UPDATE_INTERVAL)
+
+# Запуск фонового потока
+threading.Thread(target=update_track_cache_periodically, daemon=True).start()
 # ================== MAIN HANDLER ==================
 @bot.message_handler(func=lambda m: True)
 def main_handler(message):
@@ -130,12 +169,11 @@ def main_handler(message):
             "💧 7. Моеъҳо, аэрозолҳо ва моддаҳои кимиёвӣ\n"
         )
 
-    elif text == BTN_CONTACTS:
+      elif text == BTN_CONTACTS:
         show_contacts(chat_id)
 
     else:
-        send_main_menu(chat_id)
-
+        handle_user_steps(chat_id, text)
 # ================== Регистрация ==================
 def register_step_name(message):
     chat_id = message.chat.id
@@ -163,7 +201,24 @@ def register_step_phone(message):
 
     bot.send_message(chat_id, f"✅ Бақайдгирӣ анҷом ёфт!\nИмя: {user_data[chat_id]['name']}\nТел: {user_data[chat_id]['phone']}")
     send_main_menu(chat_id)
+# ================== Сохранение пользователей асинхронно ==================
+def save_user(chat_id):
+    def worker():
+        try:
+            users_sheet = gc.open("Tracks").worksheet("Users")
+        except gspread.WorksheetNotFound:
+            users_sheet = gc.open("Tracks").add_worksheet(title="Users", rows="1000", cols="3")
+            users_sheet.append_row(["ChatID", "Name", "Phone"])
 
+        if chat_id in user_cache:
+            row = user_cache[chat_id]["row"]
+            users_sheet.update(f"B{row}", user_data[chat_id]["name"])
+            users_sheet.update(f"C{row}", user_data[chat_id]["phone"])
+        else:
+            users_sheet.append_row([chat_id, user_data[chat_id]["name"], user_data[chat_id]["phone"]])
+        user_cache[chat_id] = {"Name": user_data[chat_id]["name"], "Phone": user_data[chat_id]["phone"]}
+
+    threading.Thread(target=worker).start()
 # ================== Доставка ==================
 def delivery_step_name(message):
     chat_id = message.chat.id
