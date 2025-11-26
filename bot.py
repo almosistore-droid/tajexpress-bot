@@ -7,6 +7,7 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import threading
 import time
+import re
 
 UPDATE_INTERVAL = 5 * 60  # 5 минут
 
@@ -88,6 +89,14 @@ def start_handler(message):
 # ================== КЭШ ==================
 track_cache = {}  # {track_code: row_data}
 
+def normalize_key(k):
+    """Нормализуем названия колонок: убираем пробелы, скобки, слэши и приводим к нижнему регистру"""
+    return k.strip().replace("(", "").replace(")", "").replace("/", "_").replace(" ", "_").lower()
+
+def normalize_track_code(code):
+    """Нормализуем введённый трек-код"""
+    return re.sub(r'\s+', '', str(code)).upper()
+
 def load_cache():
     """Загрузка треков из Google Sheets в кэш"""
     global track_cache
@@ -100,22 +109,31 @@ def load_cache():
         track_cache = {}
         for r in records:
             if "Track" in r and r["Track"]:
-                # Убираем все пробелы и приводим к верхнему регистру
-                key = re.sub(r'\s+', '', str(r["Track"]).upper())
-                track_cache[key] = r
-        print(f"[DEBUG] Загружено треков: {len(track_cache)}")
+                key = normalize_track_code(r["Track"])
+                # нормализуем все ключи в строке
+                row = {normalize_key(k): v for k, v in r.items()}
+                track_cache[key] = row
+        print(f"[INFO] Загружено треков: {len(track_cache)}")
         if len(track_cache) > 0:
-            print(f"[DEBUG] Примеры треков: {list(track_cache.keys())[:5]}")
+            print(f"[INFO] Примеры треков: {list(track_cache.keys())[:5]}")
     except Exception as e:
         print(f"[ERROR] Ошибка загрузки треков: {e}")
-        
+
+# вызываем при старте
+load_cache()
+
 def update_track_cache_periodically():
     global track_cache
     while True:
         try:
             if sheet:
                 records = sheet.get_all_records()
-                track_cache = {str(r["Track"]).strip().upper(): r for r in records}
+                track_cache = {}
+                for r in records:
+                    if "Track" in r and r["Track"]:
+                        key = normalize_track_code(r["Track"])
+                        row = {normalize_key(k): v for k, v in r.items()}
+                        track_cache[key] = row
                 print(f"[INFO] Кэш треков обновлен. Всего треков: {len(track_cache)}")
         except Exception as e:
             print(f"[ERROR] Не удалось обновить кэш треков: {e}")
@@ -252,44 +270,26 @@ def address_step_phone(message):
 # ================== Трек-код ==================
 def track_step(message):
     chat_id = message.chat.id
-    # Убираем все пробелы и приводим к верхнему регистру
-    code = re.sub(r'\s+', '', message.text).upper()
-    print(f"[DEBUG] Пользователь ввёл трек: '{code}'")
+    code = normalize_track_code(message.text)
+    print(f"[DEBUG] Пользователь ввёл трек: '{code}'")  # отладка
 
     row = track_cache.get(code)
-
-    if not row:
-        # Попробуем поиск без точного совпадения (на случай странных пробелов)
-        for k, v in track_cache.items():
-            if re.sub(r'\s+', '', k) == code:
-                row = v
-                break
-
     if row:
         info_text = (
-            f"🔢 Трек-код: {row.get('Track', '-')}\n"
-            f"📦 Статус: {row.get('Status', '-')}\n"
-            f"📅 Дата: {row.get('Date', '-')}\n"
-            f"👤 Имя клиента: {row.get('Name', '-')}\n"
-            f"📞 ClientCode: {row.get('ClientCode', '-')}\n"
-            f"⚖ Вес: {row.get('Weight(kg)', '-')}\n"
-            f"💰 Цена/кг: {row.get('Price/kg', '-')}\n"
-            f"💵 Всего: {row.get('Total', '-')}"
+            f"🔢 Трек-код: {row.get('track', '-')}\n"
+            f"📦 Статус: {row.get('status', '-')}\n"
+            f"📅 Дата: {row.get('date', '-')}\n"
+            f"👤 Имя клиента: {row.get('name', '-')}\n"
+            f"📞 Номер: {row.get('clientcode', '-')}\n"
+            f"⚖ Вес: {row.get('weight_kg', '-')}\n"
+            f"💰 Цена/кг: {row.get('price_kg', '-')}\n"
+            f"💵 Всего: {row.get('total', '-')}"
         )
     else:
         info_text = "❌ Трек-код не найден"
 
     bot.send_message(chat_id, info_text)
     send_main_menu(chat_id)
-def normalize_key(k):
-    return k.strip().replace(" ", "_").replace("(", "").replace(")", "").replace("/", "_").lower()
-
-track_cache = {}
-for r in records:
-    key = re.sub(r'\s+', '', str(r["Track"]).upper())
-    # нормализуем все значения
-    row = {normalize_key(k): v for k, v in r.items()}
-    track_cache[key] = row
 # ================== Контакты ==================
 def show_contacts(chat_id):
     text = "📞 *Ракамхо мо*\n\n"
