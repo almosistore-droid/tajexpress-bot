@@ -24,6 +24,7 @@ GOOGLE_CREDS_PATH = os.getenv(
     "GOOGLE_CREDENTIALS_JSON",
     "/var/www/bot/taj-express-478705-b4ad615749f9.json"
 )
+
 if not os.path.exists(GOOGLE_CREDS_PATH):
     raise RuntimeError(f"❌ Файл Google credentials не найден: {GOOGLE_CREDS_PATH}")
 
