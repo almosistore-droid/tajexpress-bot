@@ -289,7 +289,20 @@ def update_track_cache_periodically():
         except Exception as e:
             print(f"[ERROR] Не удалось обновить кэш треков: {e}")
         time.sleep(UPDATE_INTERVAL)
+# путь берём из переменной окружения
+creds_path = "/var/www/bot/taj-express-478705-b4ad615749f9.json"
 
+with open(creds_path, "r") as f:
+    creds_dict = json.load(f)
+
+scope = ["https://www.googleapis.com/auth/spreadsheets",
+         "https://www.googleapis.com/auth/drive"]
+creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+gc = gspread.authorize(creds)
+
+# пробуем открыть таблицу
+sh = gc.open("Tracks")
+print("Таблица открыта:", sh.title)
 # ================== Контакты ==================
 def show_contacts(chat_id):
     text = "📞 *Ракамхо мо*\n\n"
