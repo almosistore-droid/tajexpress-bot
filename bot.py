@@ -290,21 +290,21 @@ def normalize_track(code: str) -> str:
     # Удаляем пробелы и неалфавитно-цифровые символы, переводим в верхний регистр
     return re.sub(r"[^A-Z0-9]", "", str(code).upper())
 
+d# ================== Трек-код (Коди навшуда барои тартиби нав) ==================
 def track_step(message):
     chat_id = message.chat.id
     code = normalize_track(message.text)
-    
-    # Поиск трек-кода в кэше
     row = track_cache.get(code)
     
     if row:
-        # Убедитесь, что заголовки в вашем Google Sheet соответствуют этим ключам!
-        # Пример: Track, Status, Date, Name, ClientCode, Weight(kg), Price/kg, Total
         info_text = (
             f"🔍 **Маълумот оид ба бор (Трек-код: {row.get('Track','-')}):**\n"
             f"---"
+            
+            # ТАРТИБИ НАВ: Имя клиента (Name) дар ҷои аввал
             f"👤 **Номи мизоҷ:** {row.get('Name','-')}\n"
             f"📞 **Коди мизоҷ (ID):** {row.get('ClientCode','-')}\n"
+            
             f"📦 **Ҳолати бор:** *{row.get('Status','-')}*\n"
             f"📅 **Санаи воридшавӣ:** {row.get('Date','-')}\n"
             f"⚖ **Вазн (кг):** {row.get('Weight(kg)','-')}\n"
@@ -312,11 +312,9 @@ def track_step(message):
             f"💵 **Арзиши умумӣ:** {row.get('Total','-')}"
         )
     else:
-        info_text = (
-            "❌ **Трек-код ёфт нашуд.**\n\n"
-            "Лутфан, тафтиш кунед, ки трек-код дуруст аст ё бо оператори мо тамос гиред, агар шумо боварӣ дошта бошед, ки бор фиристода шудааст."
-        )
-        
+        # ... (матни ёфт нашудани трек-код)
+        pass 
+    
     bot.send_message(chat_id, info_text, parse_mode="Markdown")
     send_main_menu(chat_id)
 
