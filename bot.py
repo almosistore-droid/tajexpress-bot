@@ -380,32 +380,24 @@ def handle_track_start(message):
 
 def track_step(message):
     chat_id = message.chat.id
-    code_raw = message.text.strip()
-    code = normalize_track_key(code_raw)
-    print(f"[DEBUG] Пользователь {chat_id} запросил трек: '{code_raw}' -> normalized '{code}'")
+    code = normalize_track(message.text)
 
-    if not code:
-        bot.send_message(chat_id, "❌ Неверный код. Попробуйте ещё раз.")
-        send_main_menu(chat_id)
-        return
-
-    # Поиск в кэше
     row = track_cache.get(code)
     if row:
-        # используем значения из row (ключи как в таблице)
         info_text = (
             f"🔢 Трек-код: {row.get('Track', '-')}\n"
             f"📦 Статус: {row.get('Status', '-')}\n"
             f"📅 Дата: {row.get('Date', '-')}\n"
             f"👤 Имя клиента: {row.get('Name', '-')}\n"
-            f"📞 ClientCode: {row.get('ClientCode', '-')}\n"
+            f"📞 Код клиента: {row.get('ClientCode', '-')}\n"
             f"⚖ Вес: {row.get('Weight(kg)', '-')}\n"
             f"💰 Цена/кг: {row.get('Price/kg', '-')}\n"
             f"💵 Всего: {row.get('Total', '-')}"
         )
-        bot.send_message(chat_id, info_text)
     else:
-        bot.send_message(chat_id, "❌ Трек-код не найден. Проверьте номер и попробуйте ещё раз.")
+        info_text = "❌ Трек-код не найден. Проверьте номер и попробуйте ещё раз."
+
+    bot.send_message(chat_id, info_text)
     send_main_menu(chat_id)
 
 # ------------- Универсальный хендлер (последний) -------------
