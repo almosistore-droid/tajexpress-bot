@@ -112,7 +112,7 @@ def update_track_cache_periodically():
         try:
             if sheet:
                 records = sheet.get_all_records()
-                track_cache = {str(r["Track"]).upper(): r for r in records}
+                track_cache = {str(r["Track"]).strip().upper(): r for r in records}
                 print(f"[INFO] Кэш треков обновлен. Всего треков: {len(track_cache)}")
         except Exception as e:
             print(f"[ERROR] Не удалось обновить кэш треков: {e}")
