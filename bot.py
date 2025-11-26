@@ -20,14 +20,10 @@ if not TOKEN:
     raise RuntimeError("TELEGRAM_BOT_TOKEN не задан!")
 
 # Путь до JSON с ключами сервисного аккаунта (через .env)
-GOOGLE_CREDS_PATH = os.getenv(
-    "GOOGLE_CREDENTIALS_JSON",
-    "/var/www/bot/taj-express-478705-b4ad615749f9.json"
-)
-
+GOOGLE_CREDS_PATH = os.getenv("GOOGLE_CREDENTIALS_JSON", "/opt/render/secrets/credentials.json")
 if not os.path.exists(GOOGLE_CREDS_PATH):
     raise RuntimeError(f"❌ Файл Google credentials не найден: {GOOGLE_CREDS_PATH}")
-
+    
 try:
     DELIVERY_GROUP_ID = int(os.getenv("DELIVERY_GROUP_ID", "0"))
 except ValueError:
