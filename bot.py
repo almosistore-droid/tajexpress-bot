@@ -320,40 +320,38 @@ def track_step(message):
     bot.send_message(chat_id, info_text, parse_mode="Markdown")
     send_main_menu(chat_id)
 
-# ================== Кэш треков ==================
+# ================== Кэш треков (Коди навшуда) ==================
 def load_cache():
     global track_cache
     if not TRACKS_SHEET:
         print("[ERROR] Лист для треков не доступен.")
         return
-        
+
     try:
-        # Получаем ВСЕ записи из листа треков
+        # Истифодаи get_all_records() бо тахмини сарлавҳаи дуруст:
         records = TRACKS_SHEET.get_all_records()
         new_track_cache = {}
-        for r in records:
-            # Убедитесь, что колонка с трек-кодами называется 'Track'
-            if "Track" in r and r["Track"]:
-                key = normalize_track(r["Track"])
-                new_track_cache[key] = r
         
+        # Калидҳо дар Sheet, ки шумо пешниҳод кардед, агар онҳо дуруст ҷудо шуда бошанд:
+        # АГАР ИСТИФОДА ШАВАД: Track, Status, Date, Name, ClientCode, Weight(kg), Price/kg, Total
+        # АГАР ЯКҶОЯ БОШАД (мушкили шумо): 
+        # Мо бояд ба сутуни аслии трек-код муроҷиат кунем.
+        
+        # Эҳтимол дорад, ки gspread танҳо як калиди бузурги якҷояро мебинад.
+        # Аз ин рӯ, тағйир додани сарлавҳаҳо дар Google Sheet (Қадами 1) ҳатмист.
+        
+        # Агар шумо сарлавҳаҳоро мувофиқи Қадами 1 тағйир дода бошед, ин код дуруст кор мекунад:
+        TRACK_KEY = 'Track'
+
+        for r in records:
+            if TRACK_KEY in r and r[TRACK_KEY]:
+                key = normalize_track(r[TRACK_KEY])
+                new_track_cache[key] = r
+            
         track_cache = new_track_cache
         
-        # Обновление кэша пользователей (если необходимо)
-        users_sheet = get_users_sheet()
-        if users_sheet:
-            users_records = users_sheet.get_all_records()
-            new_user_cache = {}
-            for u in users_records:
-                 if "ChatID" in u and u["ChatID"]:
-                    try:
-                        chat_id = int(u["ChatID"])
-                        new_user_cache[chat_id] = {"Name": u.get("Name", ""), "Phone": u.get("Phone", "")}
-                    except ValueError:
-                        continue # Пропускаем некорректные ChatID
-            global user_cache
-            user_cache = new_user_cache
-            
+        # ... (Коди боқимондаи load_cache барои user_cache) ...
+
     except Exception as e:
         print(f"[ERROR] Ошибка загрузки данных из Google Sheets: {e}")
         
