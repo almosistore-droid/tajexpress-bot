@@ -29,9 +29,9 @@ except ValueError:
     DELIVERY_GROUP_ID = 0
 
 # ================== GOOGLE SHEETS ==================
-GOOGLE_CREDS_PATH = "taj-express-478705-b4ad615749f9.json"
-if not os.path.exists(GOOGLE_CREDS_PATH):
-    raise RuntimeError(f"❌ Файл Google credentials не найден: {GOOGLE_CREDS_PATH}")
+GOOGLE_CREDS_PATH = os.getenv("GOOGLE_CREDENTIALS_JSON")
+with open(GOOGLE_CREDS_PATH) as f:
+    creds_dict = json.load(f)
 
 with open(GOOGLE_CREDS_PATH, "r") as f:
     creds_dict = json.load(f)
