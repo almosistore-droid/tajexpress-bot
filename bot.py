@@ -290,7 +290,7 @@ def normalize_track(code: str) -> str:
     # Удаляем пробелы и неалфавитно-цифровые символы, переводим в верхний регистр
     return re.sub(r"[^A-Z0-9]", "", str(code).upper())
 
-d# ================== Трек-код (Коди навшуда барои тартиби нав) ==================
+# ================== Трек-код (Коди навшуда барои тартиби нав) ==================
 def track_step(message):
     chat_id = message.chat.id
     code = normalize_track(message.text)
