@@ -93,12 +93,12 @@ def normalize_key(k):
     """Нормализуем названия колонок: убираем пробелы, скобки, слэши и приводим к нижнему регистру"""
     return k.strip().replace("(", "").replace(")", "").replace("/", "_").replace(" ", "_").lower()
 
-def normalize_track_code(code):
-    """Нормализуем введённый трек-код"""
-    return re.sub(r'\s+', '', str(code)).upper()
+def normalize_track(track):
+    """Удаляем пробелы, дефисы и приводим к верхнему регистру"""
+    return re.sub(r"[^A-Z0-9]", "", str(track).upper())
 
 def load_cache():
-    """Загрузка треков из Google Sheets в кэш"""
+    """Загрузка треков из Google Sheets в кэш с нормализацией"""
     global track_cache
     if not sheet:
         print("[ERROR] Лист Google Sheets не найден")
@@ -109,13 +109,11 @@ def load_cache():
         track_cache = {}
         for r in records:
             if "Track" in r and r["Track"]:
-                key = normalize_track_code(r["Track"])
-                # нормализуем все ключи в строке
-                row = {normalize_key(k): v for k, v in r.items()}
-                track_cache[key] = row
-        print(f"[INFO] Загружено треков: {len(track_cache)}")
+                key = normalize_track(r["Track"])
+                track_cache[key] = r
+        print(f"[DEBUG] Загружено треков: {len(track_cache)}")
         if len(track_cache) > 0:
-            print(f"[INFO] Примеры треков: {list(track_cache.keys())[:5]}")
+            print(f"[DEBUG] Примеры треков: {list(track_cache.keys())[:5]}")
     except Exception as e:
         print(f"[ERROR] Ошибка загрузки треков: {e}")
 
@@ -270,20 +268,20 @@ def address_step_phone(message):
 # ================== Трек-код ==================
 def track_step(message):
     chat_id = message.chat.id
-    code = normalize_track_code(message.text)
-    print(f"[DEBUG] Пользователь ввёл трек: '{code}'")  # отладка
+    code = normalize_track(message.text)  # нормализуем ввод
+    print(f"[DEBUG] Пользователь ввёл трек: '{code}'")
 
     row = track_cache.get(code)
     if row:
         info_text = (
-            f"🔢 Трек-код: {row.get('track', '-')}\n"
-            f"📦 Статус: {row.get('status', '-')}\n"
-            f"📅 Дата: {row.get('date', '-')}\n"
-            f"👤 Имя клиента: {row.get('name', '-')}\n"
-            f"📞 Номер: {row.get('clientcode', '-')}\n"
-            f"⚖ Вес: {row.get('weight_kg', '-')}\n"
-            f"💰 Цена/кг: {row.get('price_kg', '-')}\n"
-            f"💵 Всего: {row.get('total', '-')}"
+            f"🔢 Трек-код: {row.get('Track', '-')}\n"
+            f"📦 Статус: {row.get('Status', '-')}\n"
+            f"📅 Дата: {row.get('Date', '-')}\n"
+            f"👤 Имя клиента: {row.get('Name', '-')}\n"
+            f"📞 Номер: {row.get('ClientCode', '-')}\n"
+            f"⚖ Вес: {row.get('Weight(kg)', '-')}\n"
+            f"💰 Цена/кг: {row.get('Price/kg', '-')}\n"
+            f"💵 Всего: {row.get('Total', '-')}"
         )
     else:
         info_text = "❌ Трек-код не найден"
