@@ -268,10 +268,24 @@ def address_step_phone(message):
 # ================== Трек-код ==================
 def track_step(message):
     chat_id = message.chat.id
-    code = normalize_track(message.text)  # нормализуем ввод
-    print(f"[DEBUG] Пользователь ввёл трек: '{code}'")
 
+    # Нормализуем ввод пользователя
+    code = normalize_track(message.text)
+
+    print("[DEBUG] ВВОД ПОЛЬЗОВАТЕЛЯ:", message.text)
+    print("[DEBUG] ПОСЛЕ НОРМАЛИЗАЦИИ:", code)
+
+    # Проверим, что таблица загрузилась
+    if records:
+        print("[DEBUG] ПРИМЕР СТРОКИ:", records[0])
+        print("[DEBUG] ВСЕ КОЛОНКИ:", list(records[0].keys()))
+    else:
+        print("[DEBUG] ТАБЛИЦА ПУСТА")
+
+    # Ищем трек-код в кэше
     row = track_cache.get(code)
+
+    # Если нашли — готовим ответ
     if row:
         info_text = (
             f"🔢 Трек-код: {row.get('Track', '-')}\n"
@@ -286,8 +300,15 @@ def track_step(message):
     else:
         info_text = "❌ Трек-код не найден"
 
+    # Отладка: первые 10 ключей
+    print("[DEBUG] ЗАГРУЖЕННЫЕ КЛЮЧИ:")
+    for k in list(track_cache.keys())[:10]:
+        print(" •", k)
+
+    # Отправляем ответ пользователю
     bot.send_message(chat_id, info_text)
     send_main_menu(chat_id)
+
 # ================== Контакты ==================
 def show_contacts(chat_id):
     text = "📞 *Ракамхо мо*\n\n"
