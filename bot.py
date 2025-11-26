@@ -86,7 +86,6 @@ def start_handler(message):
     bot.send_message(chat_id, welcome_text)
     send_main_menu(chat_id)
 
-
 # ================== MAIN HANDLER ==================
 @bot.message_handler(func=lambda m: True)
 def main_handler(message):
