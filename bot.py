@@ -23,7 +23,6 @@ GOOGLE_CREDS_PATH = os.getenv(
     "/opt/render/secrets/credentials.json"
 )
 
-# Проверка, чтобы избежать ошибок при пустом значении
 try:
     DELIVERY_GROUP_ID = int(os.getenv("DELIVERY_GROUP_ID", "0"))
 except ValueError:
@@ -38,7 +37,7 @@ bot = TeleBot(TOKEN, threaded=False)
 # ================== Данные пользователей и кэш ==================
 user_data = {}
 track_cache = {}
-user_cache = {} # Кэш пользователей для быстрого доступа
+user_cache = {}
 
 # ================== Подключение к Google Sheets ==================
 if not os.path.isfile(GOOGLE_CREDS_PATH):
@@ -52,23 +51,22 @@ scope = ["https://www.googleapis.com/auth/spreadsheets",
 creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
 gc = gspread.authorize(creds)
 
+# --- БАХШИ НАВ: САНҶИШИ ИМКОНИЯТИ ПАЙВАСТШАВӢ ---
+TRACKS_SHEET = None
+USERS_SHEET = None
+TRACKS_SHEET_NAME = "Tracks" 
+USERS_SHEET_NAME = "Users"
+
 try:
     # Предполагаем, что sheet1 это лист с треками
-    TRACKS_SHEET_NAME = "Tracks" 
     TRACKS_SHEET = gc.open(TRACKS_SHEET_NAME).sheet1 
-    # Предполагаем, что лист для пользователей называется Users
-    USERS_SHEET_NAME = "Users"
-    # Попытка получить лист Users. Если его нет, он будет создан в save_user.
     try:
         USERS_SHEET = gc.open(TRACKS_SHEET_NAME).worksheet(USERS_SHEET_NAME)
     except gspread.WorksheetNotFound:
         USERS_SHEET = None
-
 except Exception as e:
-    print(f"❌ Ошибка подключения к таблице: {e}")
-    TRACKS_SHEET = None
-    USERS_SHEET = None
-
+    print(f"❌ Ошибка подключения к таблице Google Sheets: {e}")
+# ---------------------------------------------------
 
 # ================== Меню ==================
 BTN_DELIVERY = "🚚 Доставка"
@@ -172,13 +170,10 @@ def get_users_sheet():
     global USERS_SHEET
     if USERS_SHEET is None:
         try:
-            # Открываем существующую книгу "Tracks"
             book = gc.open(TRACKS_SHEET_NAME)
-            # Пытаемся найти лист "Users"
             try:
                 USERS_SHEET = book.worksheet(USERS_SHEET_NAME)
             except gspread.WorksheetNotFound:
-                # Если не найден, создаем
                 USERS_SHEET = book.add_worksheet(title=USERS_SHEET_NAME, rows="1000", cols="3")
                 USERS_SHEET.append_row(["ChatID", "Name", "Phone"])
             return USERS_SHEET
@@ -211,7 +206,6 @@ def save_user(chat_id):
         users_sheet = get_users_sheet()
         if users_sheet:
             users_sheet.append_row([chat_id, user_data[chat_id]["name"], user_data[chat_id]["phone"]])
-            # Обновление кэша пользователей
             user_cache[chat_id] = {"Name": user_data[chat_id]["name"], "Phone": user_data[chat_id]["phone"]}
     except Exception as e:
         print(f"❌ Ошибка сохранения пользователя в Sheets: {e}")
@@ -256,7 +250,6 @@ def delivery_step_phone(message):
 def address_step_name(message):
     chat_id = message.chat.id
     name = message.text.strip()
-    # Проверка на латиницу и отсутствие спецсимволов
     if not re.match(r"^[A-Za-z\s]+$", name):
         msg = bot.send_message(chat_id, "❌ **Хатогӣ!** Танҳо ҳарфҳои лотинӣ ва фосилаҳоро истифода баред. Лутфан, дубора ворид кунед:")
         bot.register_next_step_handler(msg, address_step_name)
@@ -272,7 +265,6 @@ def address_step_phone(message):
     user_data[chat_id]["phone"] = phone
     data = user_data[chat_id]
     
-    # Формат адреса: [ВАШЕ ИМЯ ЛАТИНИЦЕЙ] [НОМЕР ТЕЛЕФОНА КАРГО] 浙江省 金华市 义乌市 福田三小区80栋二单元305室 [ВАШЕ ИМЯ ЛАТИНИЦЕЙ] [ВАШ ТЕЛЕФОН]
     full_address = (
         f"✅ **Адреси пурра барои харидҳо дар Чин:**\n"
         f"Номи мизоҷ: *{data['name']}*\n"
@@ -287,78 +279,88 @@ def address_step_phone(message):
 
 # ================== Трек-код ==================
 def normalize_track(code: str) -> str:
-    # Удаляем пробелы и неалфавитно-цифровые символы, переводим в верхний регистр
     return re.sub(r"[^A-Z0-9]", "", str(code).upper())
 
-# ================== Трек-код (Коди навшуда барои тартиби нав) ==================
 def track_step(message):
     chat_id = message.chat.id
     code = normalize_track(message.text)
+    
     row = track_cache.get(code)
     
     if row:
+        # Танҳо трек ва статус
         info_text = (
-            f"🔍 **Маълумот оид ба бор (Трек-код: {row.get('Track','-')}):**\n"
+            f"🔍 **Маълумот оид ба бор:**\n"
             f"---"
-            
-            # ТАРТИБИ НАВ: Имя клиента (Name) дар ҷои аввал
-            f"👤 **Номи мизоҷ:** {row.get('Name','-')}\n"
-            f"📞 **Коди мизоҷ (ID):** {row.get('ClientCode','-')}\n"
-            
+            f"🔢 **Трек-код:** `{row.get('Track','-')}`\n"
             f"📦 **Ҳолати бор:** *{row.get('Status','-')}*\n"
-            f"📅 **Санаи воридшавӣ:** {row.get('Date','-')}\n"
-            f"⚖ **Вазн (кг):** {row.get('Weight(kg)','-')}\n"
-            f"💰 **Нарх/кг:** {row.get('Price/kg','-')}\n"
-            f"💵 **Арзиши умумӣ:** {row.get('Total','-')}"
+            f"---"
+            f"_Барои тафсилоти бештар, ба оператор муроҷиат кунед._"
         )
     else:
-        # ... (матни ёфт нашудани трек-код)
-        pass 
-    
+        info_text = (
+            "❌ **Трек-код ёфт нашуд.**\n\n"
+            "Лутфан, тафтиш кунед, ки трек-код дуруст аст ё бо оператори мо тамос гиред."
+        )
+        
     bot.send_message(chat_id, info_text, parse_mode="Markdown")
     send_main_menu(chat_id)
 
-# ================== Кэш треков (Коди навшуда) ==================
+# ================== Кэш треков ==================
+
+# Ин номҳо бояд 100% бо сарлавҳаҳои сатри аввали Sheets мувофиқат кунанд!
+# АГАР НОМИ СУТУНИ ТРЕК ДИГАР БОШАД, ИН ҶО ТАҒЙИР ДИҲЕД.
+TRACK_KEY_NAME = 'Track' 
+
 def load_cache():
     global track_cache
     if not TRACKS_SHEET:
-        print("[ERROR] Лист для треков не доступен.")
+        print("[ERROR] Лист для треков не доступен. Проверьте подключение и имя листа.")
         return
-
+        
     try:
-        # Истифодаи get_all_records() бо тахмини сарлавҳаи дуруст:
+        # gspread.get_all_records() использует первую строку как заголовки.
         records = TRACKS_SHEET.get_all_records()
         new_track_cache = {}
-        
-        # Калидҳо дар Sheet, ки шумо пешниҳод кардед, агар онҳо дуруст ҷудо шуда бошанд:
-        # АГАР ИСТИФОДА ШАВАД: Track, Status, Date, Name, ClientCode, Weight(kg), Price/kg, Total
-        # АГАР ЯКҶОЯ БОШАД (мушкили шумо): 
-        # Мо бояд ба сутуни аслии трек-код муроҷиат кунем.
-        
-        # Эҳтимол дорад, ки gspread танҳо як калиди бузурги якҷояро мебинад.
-        # Аз ин рӯ, тағйир додани сарлавҳаҳо дар Google Sheet (Қадами 1) ҳатмист.
-        
-        # Агар шумо сарлавҳаҳоро мувофиқи Қадами 1 тағйир дода бошед, ин код дуруст кор мекунад:
-        TRACK_KEY = 'Track'
 
+        # ------------------------------------------------------------------
+        # МУҲИМ: Ин ҷо мо тахмин мезанем, ки калид "Track" аст.
+        # Агар шумо дар Sheet "Трек-код" ё чизи дигар дошта бошед, 
+        # ТАҒЙИРОТРО ДАР САТРИ болоии TRACK_KEY_NAME ВОРИД КУНЕД.
+        # ------------------------------------------------------------------
+        
         for r in records:
-            if TRACK_KEY in r and r[TRACK_KEY]:
-                key = normalize_track(r[TRACK_KEY])
+            if TRACK_KEY_NAME in r and r[TRACK_KEY_NAME]:
+                key = normalize_track(r[TRACK_KEY_NAME])
                 new_track_cache[key] = r
             
+        global track_cache
         track_cache = new_track_cache
         
-        # ... (Коди боқимондаи load_cache барои user_cache) ...
-
+        # ... (Код для user_cache, остаётся без изменений) ...
+        users_sheet = get_users_sheet()
+        if users_sheet:
+            users_records = users_sheet.get_all_records()
+            new_user_cache = {}
+            for u in users_records:
+                 if "ChatID" in u and u["ChatID"]:
+                    try:
+                        chat_id = int(u["ChatID"])
+                        new_user_cache[chat_id] = {"Name": u.get("Name", ""), "Phone": u.get("Phone", "")}
+                    except ValueError:
+                        continue
+            global user_cache
+            user_cache = new_user_cache
+        
+        print(f"[INFO] Кэш обновлён. Треков: {len(track_cache)}, Пользователей: {len(user_cache)}")
+        
     except Exception as e:
         print(f"[ERROR] Ошибка загрузки данных из Google Sheets: {e}")
-        
 
 def update_track_cache_periodically():
     while True:
         try:
             load_cache()
-            print(f"[INFO] Кэш обновлён. Треков: {len(track_cache)}, Пользователей: {len(user_cache)}")
         except Exception as e:
             print(f"[ERROR] Ошибка обновления кэша: {e}")
         time.sleep(UPDATE_INTERVAL)
@@ -370,14 +372,10 @@ def show_contacts(chat_id):
     text = "📞 *Барои тамос бо TAJEXPRESS, яке аз рақамҳои зеринро интихоб кунед:*\n\n"
     markup = types.InlineKeyboardMarkup(row_width=1)
     
-    # 1. Номер Zubaidullo
     markup.add(types.InlineKeyboardButton("📱 Менеҷер: +992 985 171 732", url="https://t.me/zubaidullo_tjk"))
     markup.add(types.InlineKeyboardButton("📱 Менеҷер: +992 933 055 707", url="https://t.me/zubaidullo_tjk"))
-    
-    # 2. Номер Fayoz
     markup.add(types.InlineKeyboardButton("📱 Менеҷер: +992 007 282 626", url="https://t.me/Fayoz_7707"))
     
-    # 3. Канал Telegram
     markup.add(types.InlineKeyboardButton("📢 Канали расмии Telegram", url="https://t.me/TAJEXPRESSCARGO"))
     
     bot.send_message(chat_id, text, reply_markup=markup, parse_mode="Markdown")
@@ -385,5 +383,5 @@ def show_contacts(chat_id):
 # ================== Запуск бота ==================
 if __name__ == "__main__":
     print("Бот запущен...")
-    load_cache() # Первоначальная загрузка
+    load_cache()
     bot.infinity_polling()
