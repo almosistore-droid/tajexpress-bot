@@ -86,58 +86,6 @@ def start_handler(message):
     bot.send_message(chat_id, welcome_text)
     send_main_menu(chat_id)
 
-# ================== КЭШ ==================
-track_cache = {}  # {track_code: row_data}
-
-def normalize_key(k):
-    """Нормализуем названия колонок: убираем пробелы, скобки, слэши и приводим к нижнему регистру"""
-    return k.strip().replace("(", "").replace(")", "").replace("/", "_").replace(" ", "_").lower()
-
-def normalize_track(track):
-    """Удаляем пробелы, дефисы и приводим к верхнему регистру"""
-    return re.sub(r"[^A-Z0-9]", "", str(track).upper())
-
-def load_cache():
-    """Загрузка треков из Google Sheets в кэш с нормализацией"""
-    global track_cache
-    if not sheet:
-        print("[ERROR] Лист Google Sheets не найден")
-        return
-
-    try:
-        records = sheet.get_all_records()
-        track_cache = {}
-        for r in records:
-            if "Track" in r and r["Track"]:
-                key = normalize_track(r["Track"])
-                track_cache[key] = r
-        print(f"[DEBUG] Загружено треков: {len(track_cache)}")
-        if len(track_cache) > 0:
-            print(f"[DEBUG] Примеры треков: {list(track_cache.keys())[:5]}")
-    except Exception as e:
-        print(f"[ERROR] Ошибка загрузки треков: {e}")
-
-# вызываем при старте
-load_cache()
-
-def update_track_cache_periodically():
-    global track_cache
-    while True:
-        try:
-            if sheet:
-                records = sheet.get_all_records()
-                track_cache = {}
-                for r in records:
-                    if "Track" in r and r["Track"]:
-                        key = normalize_track_code(r["Track"])
-                        row = {normalize_key(k): v for k, v in r.items()}
-                        track_cache[key] = row
-                print(f"[INFO] Кэш треков обновлен. Всего треков: {len(track_cache)}")
-        except Exception as e:
-            print(f"[ERROR] Не удалось обновить кэш треков: {e}")
-        time.sleep(UPDATE_INTERVAL)
-
-threading.Thread(target=update_track_cache_periodically, daemon=True).start()
 
 # ================== MAIN HANDLER ==================
 @bot.message_handler(func=lambda m: True)
@@ -266,48 +214,81 @@ def address_step_phone(message):
     send_main_menu(chat_id)
 
 # ================== Трек-код ==================
+def normalize_track(code: str) -> str:
+    """Приводим трек-код к верхнему регистру и убираем пробелы"""
+    return code.strip().replace(" ", "").upper()
+
 def track_step(message):
     chat_id = message.chat.id
-
-    # Нормализуем ввод пользователя
     code = normalize_track(message.text)
 
-    print("[DEBUG] ВВОД ПОЛЬЗОВАТЕЛЯ:", message.text)
-    print("[DEBUG] ПОСЛЕ НОРМАЛИЗАЦИИ:", code)
+    # DEBUG: показать все ключи кэша
+    print("[DEBUG] Загруженные треки:", list(track_cache.keys())[:10])
 
-    # Проверим, что таблица загрузилась
-    if records:
-        print("[DEBUG] ПРИМЕР СТРОКИ:", records[0])
-        print("[DEBUG] ВСЕ КОЛОНКИ:", list(records[0].keys()))
-    else:
-        print("[DEBUG] ТАБЛИЦА ПУСТА")
-
-    # Ищем трек-код в кэше
+    # поиск трека в кэше
     row = track_cache.get(code)
-
-    # Если нашли — готовим ответ
     if row:
         info_text = (
             f"🔢 Трек-код: {row.get('Track', '-')}\n"
             f"📦 Статус: {row.get('Status', '-')}\n"
             f"📅 Дата: {row.get('Date', '-')}\n"
             f"👤 Имя клиента: {row.get('Name', '-')}\n"
-            f"📞 Номер: {row.get('ClientCode', '-')}\n"
+            f"📞 Код клиента: {row.get('ClientCode', '-')}\n"
             f"⚖ Вес: {row.get('Weight(kg)', '-')}\n"
             f"💰 Цена/кг: {row.get('Price/kg', '-')}\n"
             f"💵 Всего: {row.get('Total', '-')}"
         )
     else:
-        info_text = "❌ Трек-код не найден"
+        info_text = "❌ Трек-код не найден. Проверьте номер и попробуйте ещё раз."
 
-    # Отладка: первые 10 ключей
-    print("[DEBUG] ЗАГРУЖЕННЫЕ КЛЮЧИ:")
-    for k in list(track_cache.keys())[:10]:
-        print(" •", k)
-
-    # Отправляем ответ пользователю
     bot.send_message(chat_id, info_text)
     send_main_menu(chat_id)
+    # ================== КЭШ ==================
+track_cache = {}  # {track_code: row_data}
+
+def normalize_key(k):
+    """Нормализуем названия колонок: убираем пробелы, скобки, слэши и приводим к нижнему регистру"""
+    return k.strip().replace("(", "").replace(")", "").replace("/", "_").replace(" ", "_").lower()
+
+def normalize_track(track):
+    """Удаляем пробелы, дефисы и приводим к верхнему регистру"""
+    return re.sub(r"[^A-Z0-9]", "", str(track).upper())
+
+def load_cache():
+    """Загрузка треков из Google Sheets в кэш с нормализацией"""
+    global track_cache
+    if not sheet:
+        print("[ERROR] Лист Google Sheets не найден")
+        return
+
+    try:
+        records = sheet.get_all_records()
+        track_cache = {}
+        for r in records:
+            if "Track" in r and r["Track"]:
+                key = normalize_track(r["Track"])
+                track_cache[key] = r
+        print(f"[DEBUG] Загружено треков: {len(track_cache)}")
+        if len(track_cache) > 0:
+            print(f"[DEBUG] Примеры треков: {list(track_cache.keys())[:5]}")
+    except Exception as e:
+        print(f"[ERROR] Ошибка загрузки треков: {e}")
+
+def update_track_cache_periodically():
+    global track_cache
+    while True:
+        try:
+            if sheet:
+                records = sheet.get_all_records()
+                track_cache = {}
+                for r in records:
+                    if "Track" in r and r["Track"]:
+                        key = normalize_track(r["Track"])  # <-- здесь обязательно normalize_track
+                        track_cache[key] = r
+                print(f"[INFO] Кэш треков обновлен. Всего треков: {len(track_cache)}")
+        except Exception as e:
+            print(f"[ERROR] Не удалось обновить кэш треков: {e}")
+        time.sleep(UPDATE_INTERVAL)
 
 # ================== Контакты ==================
 def show_contacts(chat_id):
