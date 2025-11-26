@@ -87,25 +87,28 @@ def start_handler(message):
 
 # ================== КЭШ ==================
 track_cache = {}  # {track_code: row_data}
-user_cache = {}   # {chat_id: user_data}
 
 def load_cache():
-    global track_cache, user_cache
-    if sheet:
-        try:
-            records = sheet.get_all_records()
-            track_cache = {str(r["Track"]).upper(): r for r in records}
-        except Exception as e:
-            print(f"Ошибка загрузки треков в кэш: {e}")
+    """Загрузка треков из Google Sheets в кэш"""
+    global track_cache
+    if not sheet:
+        print("[ERROR] Лист Google Sheets не найден")
+        return
+
     try:
-        users_sheet = gc.open("Tracks").worksheet("Users")
-        users_records = users_sheet.get_all_records()
-        user_cache = {int(r["ChatID"]): r for r in users_records}
+        records = sheet.get_all_records()
+        track_cache = {}
+        for r in records:
+            if "Track" in r and r["Track"]:
+                # Убираем все пробелы и приводим к верхнему регистру
+                key = re.sub(r'\s+', '', str(r["Track"]).upper())
+                track_cache[key] = r
+        print(f"[DEBUG] Загружено треков: {len(track_cache)}")
+        if len(track_cache) > 0:
+            print(f"[DEBUG] Примеры треков: {list(track_cache.keys())[:5]}")
     except Exception as e:
-        print(f"Ошибка загрузки пользователей в кэш: {e}")
-
-load_cache()
-
+        print(f"[ERROR] Ошибка загрузки треков: {e}")
+        
 def update_track_cache_periodically():
     global track_cache
     while True:
@@ -249,20 +252,33 @@ def address_step_phone(message):
 # ================== Трек-код ==================
 def track_step(message):
     chat_id = message.chat.id
-    code = message.text.strip().upper()
-    info_text = "❌ Трек-код не найден"
+    # Убираем все пробелы и приводим к верхнему регистру
+    code = re.sub(r'\s+', '', message.text).upper()
+    print(f"[DEBUG] Пользователь ввёл трек: '{code}'")
+
     row = track_cache.get(code)
+
+    if not row:
+        # Попробуем поиск без точного совпадения (на случай странных пробелов)
+        for k, v in track_cache.items():
+            if re.sub(r'\s+', '', k) == code:
+                row = v
+                break
+
     if row:
         info_text = (
             f"🔢 Трек-код: {row.get('Track', '-')}\n"
             f"📦 Статус: {row.get('Status', '-')}\n"
             f"📅 Дата: {row.get('Date', '-')}\n"
             f"👤 Имя клиента: {row.get('Name', '-')}\n"
-            f"📞 Номер: {row.get('ClientCode', '-')}\n"
+            f"📞 ClientCode: {row.get('ClientCode', '-')}\n"
             f"⚖ Вес: {row.get('Weight(kg)', '-')}\n"
             f"💰 Цена/кг: {row.get('Price/kg', '-')}\n"
             f"💵 Всего: {row.get('Total', '-')}"
         )
+    else:
+        info_text = "❌ Трек-код не найден"
+
     bot.send_message(chat_id, info_text)
     send_main_menu(chat_id)
 
