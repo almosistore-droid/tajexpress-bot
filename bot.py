@@ -113,15 +113,15 @@ def main_handler(message):
     text = message.text
 
     if text == BTN_REGISTER:
-        msg = bot.send_message(chat_id, "📝 **Барои бақайдгирӣ** лутфан, номи худро (номи пурра) ворид кунед:")
+        msg = bot.send_message(chat_id, "📝 **Барои бақайдгирӣ** лутфан, номи худро ворид кунед:")
         bot.register_next_step_handler(msg, register_step_name)
 
     elif text == BTN_DELIVERY:
-        msg = bot.send_message(chat_id, "🚚 **Оғози тартиб додани дархости расонидан**.\nЛутфан, номи пурраи гирандаро ворид кунед:")
+        msg = bot.send_message(chat_id, "🚚 Лутфан, номи пурраи гирандаро ворид кунед:")
         bot.register_next_step_handler(msg, delivery_step_name)
 
     elif text == BTN_ADDRESS:
-        msg = bot.send_message(chat_id, "🇨🇳 **Барои гирифтани адреси Чин ва коди мизоҷ**.\nНом ва насаби худро **ТАНҲО бо ҳарфҳои лотинӣ** ворид кунед (масалан, *Ahmad Saidov*):")
+        msg = bot.send_message(chat_id, "🇨🇳 **Барои гирифтани адреси Чин ва коди мизоҷ**.\nНом худро **ТАНҲО бо ҳарфҳои лотинӣ** ворид кунед (масалан, *Ahmad*):")
         bot.register_next_step_handler(msg, address_step_name)
 
     elif text == BTN_PRICE_LIST:
@@ -185,7 +185,7 @@ def get_users_sheet():
 def register_step_name(message):
     chat_id = message.chat.id
     user_data[chat_id] = {"name": message.text.strip()}
-    msg = bot.send_message(chat_id, "📞 Акнун, лутфан, рақами телефони худро (дар формати +992 XXX XX XX XX) ворид кунед:")
+    msg = bot.send_message(chat_id, "📞 Рақами телефони худро (дар формати +992 XXX XX XX XX) ворид кунед:")
     bot.register_next_step_handler(msg, register_step_phone)
 
 def register_step_phone(message):
@@ -214,13 +214,13 @@ def save_user(chat_id):
 def delivery_step_name(message):
     chat_id = message.chat.id
     user_data[chat_id] = {"name": message.text.strip()}
-    msg = bot.send_message(chat_id, "📍 Лутфан, адреси пурраи расониданро (кӯча, хона, паҳлӯи чӣ) ворид кунед:")
+    msg = bot.send_message(chat_id, "📍 Лутфан, адреси пурраи худро ворид кунед:")
     bot.register_next_step_handler(msg, delivery_step_address)
 
 def delivery_step_address(message):
     chat_id = message.chat.id
     user_data[chat_id]["address"] = message.text.strip()
-    msg = bot.send_message(chat_id, "📞 Лутфан, рақами телефони гирандаро ворид кунед:")
+    msg = bot.send_message(chat_id, "📞 Лутфан, рақами телефонро ворид кунед:")
     bot.register_next_step_handler(msg, delivery_step_phone)
 
 def delivery_step_phone(message):
@@ -256,7 +256,7 @@ def address_step_name(message):
         return
         
     user_data[chat_id] = {"name": name}
-    msg = bot.send_message(chat_id, "📞 Лутфан, рақами телефони худро (барои робитаи мо бо шумо дар ҳолати зарурӣ) ворид кунед:")
+    msg = bot.send_message(chat_id, "📞 Лутфан, рақами телефони худро ворид кунед:")
     bot.register_next_step_handler(msg, address_step_phone)
 
 def address_step_phone(message):
@@ -310,7 +310,7 @@ def track_step(message):
 
 # Ин номҳо бояд 100% бо сарлавҳаҳои сатри аввали Sheets мувофиқат кунанд!
 # АГАР НОМИ СУТУНИ ТРЕК ДИГАР БОШАД, ИН ҶО ТАҒЙИР ДИҲЕД.
-TRACK_KEY_NAME = 'Track' 
+TRACK_KEY_NAME = 'TrackCod' 
 
 def load_cache():
     global track_cache
