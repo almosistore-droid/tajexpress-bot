@@ -281,7 +281,15 @@ def track_step(message):
 
     bot.send_message(chat_id, info_text)
     send_main_menu(chat_id)
+def normalize_key(k):
+    return k.strip().replace(" ", "_").replace("(", "").replace(")", "").replace("/", "_").lower()
 
+track_cache = {}
+for r in records:
+    key = re.sub(r'\s+', '', str(r["Track"]).upper())
+    # нормализуем все значения
+    row = {normalize_key(k): v for k, v in r.items()}
+    track_cache[key] = row
 # ================== Контакты ==================
 def show_contacts(chat_id):
     text = "📞 *Ракамхо мо*\n\n"
