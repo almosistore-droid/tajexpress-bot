@@ -139,9 +139,9 @@ def main_handler(message):
     elif text == BTN_DUSHANBE:
         bot.send_message(chat_id, 
                          "🏢 *Адреси мо дар Душанбе:*\n"
-                         "🇹🇯 **ш. Душанбе, 103 мкр, бинои 3**\n"
+                         "🇹🇯 **ш. Душанбе, 103 мкр, бинои 34**\n"
                          "☎️ **Тел:** `+992 985 171 732` (Барои тамос бо мо) \n"
-                         "⏰ **Вақти корӣ:** 9:00 - 18:00 (Ду-Шанбе)",
+                         "⏰ **Вақти корӣ:** 9:00 - 18:00 (Душанбе)",
                          parse_mode="Markdown")
 
     elif text == BTN_BANNED:
@@ -251,7 +251,7 @@ def address_step_name(message):
     chat_id = message.chat.id
     name = message.text.strip()
     if not re.match(r"^[A-Za-z\s]+$", name):
-        msg = bot.send_message(chat_id, "❌ **Хатогӣ!** Танҳо ҳарфҳои лотинӣ ва фосилаҳоро истифода баред. Лутфан, дубора ворид кунед:")
+        msg = bot.send_message(chat_id, "❌ **Хатогӣ!** Танҳо ҳарфҳои лотинӣ истифода баред. Лутфан, дубора ворид кунед:")
         bot.register_next_step_handler(msg, address_step_name)
         return
         
@@ -322,13 +322,6 @@ def load_cache():
         # gspread.get_all_records() использует первую строку как заголовки.
         records = TRACKS_SHEET.get_all_records()
         new_track_cache = {}
-
-        # ------------------------------------------------------------------
-        # МУҲИМ: Ин ҷо мо тахмин мезанем, ки калид "Track" аст.
-        # Агар шумо дар Sheet "Трек-код" ё чизи дигар дошта бошед, 
-        # ТАҒЙИРОТРО ДАР САТРИ болоии TRACK_KEY_NAME ВОРИД КУНЕД.
-        # ------------------------------------------------------------------
-        
         for r in records:
             if TRACK_KEY_NAME in r and r[TRACK_KEY_NAME]:
                 key = normalize_track(r[TRACK_KEY_NAME])
