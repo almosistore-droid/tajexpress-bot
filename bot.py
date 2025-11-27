@@ -86,11 +86,11 @@ MAIN_MENU = [
     [BTN_CONTACTS]
 ]
 
-def send_main_menu(chat_id, text="Менюи асосӣ. Лутфан, интихоб кунед:"):
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    for row in MAIN_MENU:
-        markup.add(*[types.KeyboardButton(text) for text in row])
-    bot.send_message(chat_id, text, reply_markup=markup)
+#def send_main_menu(chat_id, text="Менюи асосӣ. Лутфан, интихоб кунед:"):
+#    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+#    for row in MAIN_MENU:
+#        markup.add(*[types.KeyboardButton(text) for text in row])
+#    bot.send_message(chat_id, text, reply_markup=markup)
 
 # ================== START ==================
 @bot.message_handler(commands=["start", "help"])
