@@ -196,7 +196,7 @@ def delivery_step_phone(message):
     send_main_menu(chat_id)
 
 
-# ================== Адрес (Бо тағйирот) ==================
+# ================== Адрес (Бо тағйироти НИҲОӢ) ==================
 def address_step_name(message):
     chat_id = message.chat.id
     name = message.text.strip()
@@ -218,10 +218,17 @@ def address_step_name(message):
     msg = bot.send_message(chat_id, "📞 Лутфан, рақами телефони худро ворид кунед:")
     bot.register_next_step_handler(msg, address_step_phone)
 
-# 🛠️ Тағйироти асосӣ дар ин функсия
+# 🛠️ ФУНКСИЯИ ДУРУСТ ВА ИСЛОҲШУДАИ address_step_phone
 def address_step_phone(message):
     chat_id = message.chat.id
     phone = message.text.strip()
+    
+    # Санҷиш, ки оё маълумот дар user_data мавҷуд аст
+    if chat_id not in user_data:
+        bot.send_message(chat_id, "❌ **Хатогӣ!** Лутфан, аз менюи асосӣ дубора оғоз кунед.")
+        send_main_menu(chat_id)
+        return
+
     user_data[chat_id]["phone"] = phone
     data = user_data[chat_id]
     
@@ -229,33 +236,19 @@ def address_step_phone(message):
     
     
     # ====================================================================
-    # ✈️ Логикаи АВИА ва НАЗЕМНЫЙ
-    # ====================================================================
-    def address_step_phone(message):
-    chat_id = message.chat.id
-    phone = message.text.strip()
-    user_data[chat_id]["phone"] = phone
-    data = user_data[chat_id]
-    
-    delivery_type = data.get('delivery_type', 'Номаълум')
-    
-    # ====================================================================
-    # ✈️ Логикаи АВИА ва НАЗЕМНЫЙ
+    # ✈️ Логикаи АВИА ва НАЗЕМНЫЙ (Ҳарду бо формати мукаммал)
     # ====================================================================
     if delivery_type == "АВИА":
         # Маълумот барои АВИА (Суроғаи Sam)
-        # ❗️ Суроға ва рақами телефони чинӣ барои АВИА
         base_address_cn = "北京市通州区葛布店南里5号楼151"
         contact_phone_cn = "17813714041" 
         
     else: # 🚢 НАЗЕМНЫЙ (Ё Номаълум)
         # Маълумот барои НАЗЕМНЫЙ (Суроғаи пешина)
-        # ❗️ Суроға ва рақами телефони чинӣ барои НАЗЕМНЫЙ
-        base_address_cn = "17590820846 浙江省 金华市 义乌市 福田三小区80栋二单元305室"
+        base_address_cn = "浙江省 金华市 义乌市 福田三小区80栋二单元305室"
         contact_phone_cn = "17590820846"
         
-    # 🛠️ ФОРМАТИ НАВИ МУҚАРРАРШУДА: Ҳардуи онҳо ба ин формат мувофиқат мекунанд:
-    # [Номи мизоҷ] [Телефони Чин] [Адреси Чин] [Номи мизоҷ] [Телефони корбар]
+    # 🛠️ ФОРМАТИ НИҲОИИ МУҚАРРАРШУДА: [Номи мизоҷ] [Телефони Чин] [Адреси Чин] [Номи мизоҷ] [Телефони корбар]
     china_address_format = (
         f"{data['name']} {contact_phone_cn} {base_address_cn} {data['name']} {data['phone']}"
     )
