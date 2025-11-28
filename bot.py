@@ -1,7 +1,5 @@
 import os
 import re
-import threading
-import time
 from telebot import TeleBot, types
 from telebot.apihelper import ApiTelegramException
 from dotenv import load_dotenv
@@ -81,7 +79,11 @@ def choose_delivery_type(chat_id):
 def handle_address_type_callback(call):
     chat_id = call.message.chat.id
     
-    bot.edit_message_reply_markup(chat_id, call.message.message_id, reply_markup=None)
+    # Нест кардани тугмаҳо
+    try:
+        bot.edit_message_reply_markup(chat_id, call.message.message_id, reply_markup=None)
+    except ApiTelegramException:
+        pass # Иғно кардан аз хатогӣ, агар тугмаҳо пештар нест шуда бошанд
     
     delivery_type = "АВИА" if call.data == "address_type_avia" else "НАЗЕМНЫЙ"
     user_data[chat_id] = {"delivery_type": delivery_type}
@@ -115,13 +117,15 @@ def main_handler(message):
                               "Барои тафсилоти бештар бо оператор тамос гиред.",
                               parse_mode="Markdown")
 
- # Дар дохили функсияи main_handler
-elif text == BTN_TRACK:
-    # ИСТИФОДАИ НОМИ ДУРУСТИ КАНАЛРО ТАСДИҚ КУНЕД
-    track_link = "https://t.me/НОМИ_ДУРУСТИ_КАНАЛИ_ТРЕККОДИ_ШУМО" # Мисол: https://t.me/TAJEXPRESSCARGO
-    markup = types.InlineKeyboardMarkup(row_width=1)
-    markup.add(types.InlineKeyboardButton("🔍 Барои тафтиши треккод ворид шавед", url=track_link))
-    # ...
+    elif text == BTN_TRACK:
+        # ⚠️ Ин номи каналро бо номи дурусти канали худ иваз кунед, ки дар акси экран хато буд
+        track_link = "https://t.me/TAJEXPRETACCOD_FIXME" 
+        markup = types.InlineKeyboardMarkup(row_width=1)
+        markup.add(types.InlineKeyboardButton("🔍 Барои тафтиши треккод ворид шавед", url=track_link))
+        track_text = (
+            "🔍 Барои тафтиши трек-коди худ, лутфан ба канали мо ворид шавед.\n\n"
+            "Ба тугмаи зерин пахш кунед:"
+        )
         bot.send_message(chat_id, track_text, reply_markup=markup, parse_mode="Markdown")
         
     elif text == BTN_DUSHANBE:
@@ -158,7 +162,7 @@ elif text == BTN_TRACK:
         send_main_menu(chat_id)
 
 
-# ================== Доставка (Бетағйир) ==================
+# ================== Доставка ==================
 def delivery_step_name(message):
     chat_id = message.chat.id
     user_data[chat_id] = {"name": message.text.strip()}
@@ -202,7 +206,6 @@ def address_step_name(message):
     
     # Санҷиш барои гузариш аз қадами интихоби навъи интиқол
     if chat_id not in user_data or 'delivery_type' not in user_data[chat_id]:
-        # Агар корбар бе интихоб ном фиристода бошад, ӯро ба интихоб баргардонед
         bot.send_message(chat_id, "❌ **Хатогӣ!** Лутфан, аз менюи асосӣ дубора оғоз кунед ва навъи интиқолро интихоб кунед.")
         send_main_menu(chat_id)
         return
@@ -217,12 +220,11 @@ def address_step_name(message):
     msg = bot.send_message(chat_id, "📞 Лутфан, рақами телефони худро ворид кунед:")
     bot.register_next_step_handler(msg, address_step_phone)
 
-# 🛠️ ФУНКСИЯИ ДУРУСТ ВА ИСЛОҲШУДАИ address_step_phone
+
 def address_step_phone(message):
     chat_id = message.chat.id
     phone = message.text.strip()
     
-    # Санҷиш, ки оё маълумот дар user_data мавҷуд аст
     if chat_id not in user_data:
         bot.send_message(chat_id, "❌ **Хатогӣ!** Лутфан, аз менюи асосӣ дубора оғоз кунед.")
         send_main_menu(chat_id)
@@ -265,6 +267,7 @@ def address_step_phone(message):
     
     bot.send_message(chat_id, full_address, parse_mode="Markdown")
     send_main_menu(chat_id)
+
 # ================== Контакты ==================
 def show_contacts(chat_id):
     text = "📞 *Барои тамос бо TAJEXPRESS, яке аз рақамҳои зеринро интихоб кунед:*\n\n"
