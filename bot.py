@@ -115,14 +115,13 @@ def main_handler(message):
                               "Барои тафсилоти бештар бо оператор тамос гиред.",
                               parse_mode="Markdown")
 
-    elif text == BTN_TRACK:
-        track_link = "https://t.me/TAJEXPRETACCOD" 
-        markup = types.InlineKeyboardMarkup(row_width=1)
-        markup.add(types.InlineKeyboardButton("🔍 Барои тафтиши треккод ворид шавед", url=track_link))
-        track_text = (
-            "🔍 Барои тафтиши трек-коди худ, лутфан ба канали мо ворид шавед.\n\n"
-            "Ба тугмаи зерин пахш кунед:"
-        )
+ # Дар дохили функсияи main_handler
+elif text == BTN_TRACK:
+    # ИСТИФОДАИ НОМИ ДУРУСТИ КАНАЛРО ТАСДИҚ КУНЕД
+    track_link = "https://t.me/НОМИ_ДУРУСТИ_КАНАЛИ_ТРЕККОДИ_ШУМО" # Мисол: https://t.me/TAJEXPRESSCARGO
+    markup = types.InlineKeyboardMarkup(row_width=1)
+    markup.add(types.InlineKeyboardButton("🔍 Барои тафтиши треккод ворид шавед", url=track_link))
+    # ...
         bot.send_message(chat_id, track_text, reply_markup=markup, parse_mode="Markdown")
         
     elif text == BTN_DUSHANBE:
