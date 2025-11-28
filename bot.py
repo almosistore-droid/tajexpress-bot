@@ -116,9 +116,9 @@ def main_handler(message):
                               "Барои тафсилоти бештар бо оператор тамос гиред.",
                               parse_mode="Markdown")
 
-elif text == BTN_TRACK:
+    elif text == BTN_TRACK:
         # 🟢 Истиноди дуруст барои канали TAJEXPRESSCARGO
-        track_link = "https://t.me/TAJEXPRESSCARGO" 
+        track_link = "https://t.me/TAJEXPRESSTRACCOD" 
         markup = types.InlineKeyboardMarkup(row_width=1)
         
         # 🟢 Тугма барои ворид шудан ба канал
