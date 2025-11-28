@@ -97,7 +97,7 @@ def main_handler(message):
 
     elif text == BTN_TRACK:
         # Логикаи фиристодани ссылка
-        track_link = "https://t.me/TAJEXPRETACCOD" 
+        track_link = "https://t.me/TAJEXPRESSTRACCOD" 
         markup = types.InlineKeyboardMarkup(row_width=1)
         markup.add(types.InlineKeyboardButton("🔍 Барои тафтиши треккод ворид шавед", url=track_link))
         track_text = (
@@ -244,7 +244,7 @@ def show_about_us(chat_id):
     text = "ℹ️ *Мо дар шабакаҳои иҷтимоӣ:*\n\n"
     markup = types.InlineKeyboardMarkup(row_width=1)
     
-    markup.add(types.InlineKeyboardButton("📢 Канали Telegram", url="https://t.me/TAJEXPRESSCARGO"))
+    markup.add(types.InlineKeyboardButton("📢 Канали Telegram", url="https://t.me/TAJEXPRESSTRACCOD"))
     markup.add(types.InlineKeyboardButton("📸 Саҳифаи Instagram", url="https://www.instagram.com/taj_express01?igsh=ZmcxdHE4eXI0aWc1")) 
     
     bot.send_message(chat_id, text, reply_markup=markup, parse_mode="Markdown")
