@@ -105,9 +105,8 @@ def main_handler(message):
         msg = bot.send_message(chat_id, "🚚 Лутфан, номи пурраи гирандаро ворид кунед:")
         bot.register_next_step_handler(msg, delivery_step_name)
 
-    # 🛠️ Тағйир додани логикаи BTN_ADDRESS
     elif text == BTN_ADDRESS:
-        choose_delivery_type(chat_id) # Оғози интихоби навъи интиқол
+        choose_delivery_type(chat_id)
 
     elif text == BTN_PRICE_LIST:
         bot.send_message(chat_id,
@@ -118,7 +117,7 @@ def main_handler(message):
                               parse_mode="Markdown")
 
     elif text == BTN_TRACK:
-        # ⚠️ Агар канали шумо хатогӣ диҳад, ин номро бо номи дурусти канал иваз кунед!
+        # ⚠️ Ин номи каналро бо номи дурусти канали худ иваз кунед
         track_link = "https://t.me/TAJEXPRESS_TRACKING_CHANNEL" 
         markup = types.InlineKeyboardMarkup(row_width=1)
         markup.add(types.InlineKeyboardButton("🔍 Барои тафтиши треккод ворид шавед", url=track_link))
