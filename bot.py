@@ -8,8 +8,6 @@ from telebot.apihelper import ApiTelegramException
 from dotenv import load_dotenv
 
 # ================== Настройки ==================
-# UPDATE_INTERVAL, GOOGLE_CREDS_PATH, ва ғайра хориҷ карда шуданд.
-
 load_dotenv()
 
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
@@ -29,7 +27,6 @@ bot = TeleBot(TOKEN, threaded=False)
 
 # ================== Данные пользователей и кэш ==================
 user_data = {}
-# track_cache ва user_cache хориҷ карда шуданд, чунки Sheets нест.
 
 # ================== Меню ==================
 BTN_DELIVERY = "🚚 Доставка"
@@ -50,11 +47,13 @@ MAIN_MENU = [
     [BTN_CONTACTS, BTN_ABOUT_US]
 ]
 
-def send_main_menu(chat_id, text=""):
+# 🛠️ ТАҒЙИРОТ ДАР ИН ФУНКСИЯ: Иловаи parse_mode
+def send_main_menu(chat_id, text="Менюи асосӣ. Лутфан, интихоб кунед:"):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     for row in MAIN_MENU:
         markup.add(*[types.KeyboardButton(button_text) for button_text in row])
-    bot.send_message(chat_id, text, reply_markup=markup)
+    # Истифодаи Markdown барои паём
+    bot.send_message(chat_id, text, reply_markup=markup, parse_mode="Markdown")
 
 # ================== START ==================
 @bot.message_handler(commands=["start", "help"])
@@ -67,8 +66,8 @@ def start_handler(message):
         "🇨🇳 *Суроғаи қулай дар Чин* барои харидҳои шумо\n\n"
         "Менюи зерро интихоб кунед:"
     )
-    bot.send_message(chat_id, welcome_text, parse_mode="Markdown")
-    send_main_menu(chat_id)
+    # 🛠️ ТАҒЙИРОТ ДАР ИН ФУНКСИЯ: Муттаҳид кардани паём
+    send_main_menu(chat_id, welcome_text)
 
 # ================== Основной обработчик ==================
 @bot.message_handler(func=lambda m: True)
@@ -90,11 +89,11 @@ def main_handler(message):
 
     elif text == BTN_PRICE_LIST:
         bot.send_message(chat_id,
-                          "💰 *Нархномаи хизматрасониҳо:*\n"
-                          "• Аз **200кг то 1000кг** — *$1.8$* барои 1 кг\n"
-                          "• Аз **0.1кг то 200кг** — *$3.0$* барои 1 кг\n"
-                          "Барои тафсилоти бештар бо оператор тамос гиред.",
-                          parse_mode="Markdown")
+                              "💰 *Нархномаи хизматрасониҳо:*\n"
+                              "• Аз **200кг то 1000кг** — *$1.8$* барои 1 кг\n"
+                              "• Аз **0.1кг то 200кг** — *$3.0$* барои 1 кг\n"
+                              "Барои тафсилоти бештар бо оператор тамос гиред.",
+                              parse_mode="Markdown")
 
     elif text == BTN_TRACK:
         # Логикаи фиристодани ссылка
@@ -109,26 +108,26 @@ def main_handler(message):
         
     elif text == BTN_DUSHANBE:
         bot.send_message(chat_id, 
-                          "🏢 *Адреси мо дар Душанбе:*\n"
-                          "🇹🇯 **ш. Душанбе, 103 мкр, бинои 34**\n"
-                          "☎️ **Тел:** `+992 985 171 732` (Барои тамос бо мо) \n"
-                          "⏰ **Вақти корӣ:** 9:00 - 18:00 (Душанбе)",
-                          parse_mode="Markdown")
+                              "🏢 *Адреси мо дар Душанбе:*\n"
+                              "🇹🇯 **ш. Душанбе, 103 мкр, бинои 34**\n"
+                              "☎️ **Тел:** `+992 985 171 732` (Барои тамос бо мо) \n"
+                              "⏰ **Вақти корӣ:** 9:00 - 18:00 (Душанбе)",
+                              parse_mode="Markdown")
 
     elif text == BTN_BANNED:
         bot.send_message(chat_id,
-                          "⚠️ *Рӯйхати маҳсулотҳои манъшуда барои интиқол:*\n"
-                          "---"
-                          "🔥 1. **Маводҳои тарканда** (аз қабили пиротехника)\n"
-                          "🔋 2. **Батареяҳо, аккумуляторҳо, магнитҳо ва повербанкҳо** (дар шакли алоҳида)\n"
-                          "🥗 3. **Хӯрокворӣ, тухмӣ ва шинонандаҳо**\n"
-                          "🔫 4. **Ҳарбу зарфҳо, кастет ва кордҳо** (ғайриқонунӣ)\n"
-                          "⛽ 5. **Маводи сӯзишворӣ, равған ва косметикаи моеъ**\n"
-                          "💎 6. **Нуқра, тилло ва маҳсулоти қиматбаҳо**\n"
-                          "💧 7. **Моеъҳо, аэрозолҳо ва кимиёвӣ** (дар ҳаҷми калон)\n"
-                          "🔞 8. **Ҳама намуд маҳсулотҳои 18+** (маводҳои порнографӣ, бозичаҳои ҷинсӣ ва ғайра)\n\n"
-                          "_Лутфан, пеш аз фиристодан, ин рӯйхатро бодиққат хонед._",
-                          parse_mode="Markdown")
+                              "⚠️ *Рӯйхати маҳсулотҳои манъшуда барои интиқол:*\n"
+                              "---"
+                              "🔥 1. **Маводҳои тарканда** (аз қабили пиротехника)\n"
+                              "🔋 2. **Батареяҳо, аккумуляторҳо, магнитҳо ва повербанкҳо** (дар шакли алоҳида)\n"
+                              "🥗 3. **Хӯрокворӣ, тухмӣ ва шинонандаҳо**\n"
+                              "🔫 4. **Ҳарбу зарфҳо, кастет ва кордҳо** (ғайриқонунӣ)\n"
+                              "⛽ 5. **Маводи сӯзишворӣ, равған ва косметикаи моеъ**\n"
+                              "💎 6. **Нуқра, тилло ва маҳсулоти қиматбаҳо**\n"
+                              "💧 7. **Моеъҳо, аэрозолҳо ва кимиёвӣ** (дар ҳаҷми калон)\n"
+                              "🔞 8. **Ҳама намуд маҳсулотҳои 18+** (маводҳои порнографӣ, бозичаҳои ҷинсӣ ва ғайра)\n\n"
+                              "_Лутфан, пеш аз фиристодан, ин рӯйхатро бодиққат хонед._",
+                              parse_mode="Markdown")
 
     elif text == BTN_CONTACTS:
         show_contacts(chat_id)
@@ -142,7 +141,6 @@ def main_handler(message):
 
 
 # ================== Регистрация (Танҳо паём) ==================
-# Функсияҳои Sheets (get_users_sheet ва save_user) хориҷ карда шуданд.
 def register_step_name(message):
     chat_id = message.chat.id
     user_data[chat_id] = {"name": message.text.strip()}
@@ -153,8 +151,6 @@ def register_step_phone(message):
     chat_id = message.chat.id
     phone = message.text.strip()
     user_data[chat_id]["phone"] = phone
-    
-    # ❌ Коди save_user хориҷ карда шуд
     
     bot.send_message(chat_id,
                      f"✅ **Бақайдгирии шумо бо муваффақият анҷом ёфт!**\n"
@@ -192,7 +188,6 @@ def delivery_step_phone(message):
     )
     
     try:
-        # Заявка по-прежнему в группу отправляется
         if DELIVERY_GROUP_ID != 0:
             bot.send_message(DELIVERY_GROUP_ID, delivery_text, parse_mode="Markdown")
         bot.send_message(chat_id, "✅ **Заявка на доставку принята!**\nВ ближайшее время с Вами свяжется наш менеджер.", parse_mode="Markdown")
@@ -221,7 +216,6 @@ def address_step_phone(message):
     user_data[chat_id]["phone"] = phone
     data = user_data[chat_id]
     
-    # Эзоҳ: "17590820846" дар ин ҷо рақами тамос дар Чин аст
     full_address = (
         f"✅ **Адреси пурра барои харидҳо дар Чин:**\n"
         f"Номи мизоҷ: *{data['name']}*\n"
@@ -251,7 +245,6 @@ def show_about_us(chat_id):
     markup = types.InlineKeyboardMarkup(row_width=1)
     
     markup.add(types.InlineKeyboardButton("📢 Канали Telegram", url="https://t.me/TAJEXPRESSCARGO"))
-    # Истиноди Instagram-и худро иваз кунед
     markup.add(types.InlineKeyboardButton("📸 Саҳифаи Instagram", url="https://www.instagram.com/taj_express01?igsh=ZmcxdHE4eXI0aWc1")) 
     
     bot.send_message(chat_id, text, reply_markup=markup, parse_mode="Markdown")
@@ -259,5 +252,4 @@ def show_about_us(chat_id):
 # ================== Запуск бота ==================
 if __name__ == "__main__":
     print("Бот запущен...")
-    # Коди load_cache ва threading барои кэш хориҷ карда шуд.
     bot.infinity_polling()
