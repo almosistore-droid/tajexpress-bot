@@ -1,5 +1,4 @@
 import os
-import json
 import re
 import threading
 import time
@@ -36,11 +35,9 @@ BTN_PRICE_LIST = "📦 Нархнома"
 BTN_TRACK = "🔍 Проверка трек-кода"
 BTN_BANNED = "🚫 Молхои манъшуда"
 BTN_CONTACTS = "📞 Контакты"
-# ❌ BTN_REGISTER хориҷ карда шуд
 BTN_ABOUT_US = "ℹ️ Информация о нас"
 
 MAIN_MENU = [
-    # ❌ Сатри [BTN_REGISTER] хориҷ карда шуд
     [BTN_DELIVERY, BTN_ADDRESS],
     [BTN_TRACK, BTN_DUSHANBE],
     [BTN_PRICE_LIST, BTN_BANNED],
@@ -66,21 +63,49 @@ def start_handler(message):
     )
     send_main_menu(chat_id, welcome_text)
 
+# 🛠️ Иловаи функсияи интихоби навъи интиқол
+def choose_delivery_type(chat_id):
+    text = "✈️ *Лутфан, навъи интиқолеро, ки мехоҳед истифода баред, интихоб кунед:*"
+    
+    markup = types.InlineKeyboardMarkup(row_width=2)
+    
+    markup.add(
+        types.InlineKeyboardButton("✈️ АВИА", callback_data="address_type_avia"),
+        types.InlineKeyboardButton("🚢 НАЗЕМНЫЙ", callback_data="address_type_ground")
+    )
+    
+    bot.send_message(chat_id, text, reply_markup=markup, parse_mode="Markdown")
+
+# 🛠️ Иловаи обработчик барои интихоби АВИА/НАЗЕМНЫЙ
+@bot.callback_query_handler(func=lambda call: call.data.startswith('address_type_'))
+def handle_address_type_callback(call):
+    chat_id = call.message.chat.id
+    
+    bot.edit_message_reply_markup(chat_id, call.message.message_id, reply_markup=None)
+    
+    delivery_type = "АВИА" if call.data == "address_type_avia" else "НАЗЕМНЫЙ"
+    user_data[chat_id] = {"delivery_type": delivery_type}
+
+    msg = bot.send_message(chat_id, 
+                           f"✅ Шумо **{delivery_type}**-ро интихоб кардед.\n\n"
+                           f"🇨🇳 Лутфан, номи худро **ТАНҲО бо ҳарфҳои лотинӣ** ворид кунед (масалан, *Ahmad*):")
+    
+    bot.register_next_step_handler(msg, address_step_name)
+
+
 # ================== Основной обработчик ==================
 @bot.message_handler(func=lambda m: True)
 def main_handler(message):
     chat_id = message.chat.id
     text = message.text
 
-    # ❌ Блоки if text == BTN_REGISTER: хориҷ карда шуд
-
     if text == BTN_DELIVERY:
         msg = bot.send_message(chat_id, "🚚 Лутфан, номи пурраи гирандаро ворид кунед:")
         bot.register_next_step_handler(msg, delivery_step_name)
 
+    # 🛠️ Тағйир додани логикаи BTN_ADDRESS
     elif text == BTN_ADDRESS:
-        msg = bot.send_message(chat_id, "🇨🇳 **Барои гирифтани адрес**.\nНом худро **ТАНҲО бо ҳарфҳои лотинӣ** ворид кунед (масалан, *Ahmad*):")
-        bot.register_next_step_handler(msg, address_step_name)
+        choose_delivery_type(chat_id) # Оғози интихоби навъи интиқол
 
     elif text == BTN_PRICE_LIST:
         bot.send_message(chat_id,
@@ -91,7 +116,6 @@ def main_handler(message):
                               parse_mode="Markdown")
 
     elif text == BTN_TRACK:
-        # Логикаи фиристодани ссылка
         track_link = "https://t.me/TAJEXPRETACCOD" 
         markup = types.InlineKeyboardMarkup(row_width=1)
         markup.add(types.InlineKeyboardButton("🔍 Барои тафтиши треккод ворид шавед", url=track_link))
@@ -135,10 +159,7 @@ def main_handler(message):
         send_main_menu(chat_id)
 
 
-# ❌ Функсияҳои register_step_name ва register_step_phone пурра хориҷ карда шуданд.
-
-
-# ================== Доставка ==================
+# ================== Доставка (Бетағйир) ==================
 def delivery_step_name(message):
     chat_id = message.chat.id
     user_data[chat_id] = {"name": message.text.strip()}
@@ -174,32 +195,69 @@ def delivery_step_phone(message):
         bot.send_message(chat_id, f"❌ Ошибка отправки заявки. Пожалуйста, попробуйте позже или свяжитесь с нами напрямую.")
     send_main_menu(chat_id)
 
-# ================== Адрес ==================
+
+# ================== Адрес (Бо тағйирот) ==================
 def address_step_name(message):
     chat_id = message.chat.id
     name = message.text.strip()
+    
+    # Санҷиш барои гузариш аз қадами интихоби навъи интиқол
+    if chat_id not in user_data or 'delivery_type' not in user_data[chat_id]:
+        # Агар корбар бе интихоб ном фиристода бошад, ӯро ба интихоб баргардонед
+        bot.send_message(chat_id, "❌ **Хатогӣ!** Лутфан, аз менюи асосӣ дубора оғоз кунед ва навъи интиқолро интихоб кунед.")
+        send_main_menu(chat_id)
+        return
+        
     if not re.match(r"^[A-Za-z\s]+$", name):
         msg = bot.send_message(chat_id, "❌ **Хатогӣ!** Танҳо ҳарфҳои лотинӣ истифода баред. Лутфан, дубора ворид кунед:")
         bot.register_next_step_handler(msg, address_step_name)
         return
         
-    user_data[chat_id] = {"name": name}
+    user_data[chat_id]["name"] = name 
+    
     msg = bot.send_message(chat_id, "📞 Лутфан, рақами телефони худро ворид кунед:")
     bot.register_next_step_handler(msg, address_step_phone)
 
+# 🛠️ Тағйироти асосӣ дар ин функсия
 def address_step_phone(message):
     chat_id = message.chat.id
     phone = message.text.strip()
     user_data[chat_id]["phone"] = phone
     data = user_data[chat_id]
     
+    delivery_type = data.get('delivery_type', 'Номаълум')
+    
+    
+    # ====================================================================
+    # ✈️ Логикаи АВИА ва НАЗЕМНЫЙ
+    # ====================================================================
+    if delivery_type == "АВИА":
+        # Маълумот барои АВИА (Суроғаи Sam)
+        base_address_cn = "北京市通州区葛布店南里5号楼151"
+        contact_phone_cn = "17813714041" 
+        
+        # Формати АВИА: [Адрес] [Ном] [Телефон]
+        china_address_format = f"{base_address_cn} {data['name']} {contact_phone_cn}"
+        
+    else: # НАЗЕМНЫЙ (Ё Номаълум)
+        # Маълумот барои НАЗЕМНЫЙ (Суроғаи пешина)
+        base_address_cn = "浙江省 金华市 义乌市 福田三小区80栋二单元305室"
+        contact_phone_cn = "17590820846"
+        
+        # Формати НАЗЕМНЫЙ: [Ном] [Телефон Чин] [Адрес] [Ном] [Телефон корбар]
+        china_address_format = (
+            f"{data['name']} {contact_phone_cn} {base_address_cn} {data['name']} {data['phone']}"
+        )
+    # ====================================================================
+    
     full_address = (
         f"✅ **Адреси пурра барои харидҳо дар Чин:**\n"
+        f"**Тип доставки:** *{delivery_type}*\n"
         f"Номи мизоҷ: *{data['name']}*\n"
         f"Телефон: *{data['phone']}*\n"
         f"---"
         f"📝 **Барои истифода дар сайтҳои Чин:**\n"
-        f"`{data['name']} 17590820846 浙江省 金华市 义乌市 福田三小区80栋二单元305室 {data['name']} {data['phone']}`"
+        f"`{china_address_format}`"
     )
     
     bot.send_message(chat_id, full_address, parse_mode="Markdown")
