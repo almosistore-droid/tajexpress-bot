@@ -61,7 +61,7 @@ def start_handler(message):
     )
     send_main_menu(chat_id, welcome_text)
 
-# 🛠️ Иловаи функсияи интихоби навъи интиқол
+# 🛠️ Функсияи интихоби навъи интиқол барои гирифтани адрес
 def choose_delivery_type(chat_id):
     text = "✈️ *Лутфан, навъи интиқолеро, ки мехоҳед истифода баред, интихоб кунед:*"
     
@@ -74,16 +74,15 @@ def choose_delivery_type(chat_id):
     
     bot.send_message(chat_id, text, reply_markup=markup, parse_mode="Markdown")
 
-# 🛠️ Иловаи обработчик барои интихоби АВИА/НАЗЕМНЫЙ
+# 🛠️ Обработчик барои интихоби АВИА/НАЗЕМНЫЙ (гирифтани адрес)
 @bot.callback_query_handler(func=lambda call: call.data.startswith('address_type_'))
 def handle_address_type_callback(call):
     chat_id = call.message.chat.id
     
-    # Нест кардани тугмаҳо
     try:
         bot.edit_message_reply_markup(chat_id, call.message.message_id, reply_markup=None)
     except ApiTelegramException:
-        pass # Иғно кардан аз хатогӣ, агар тугмаҳо пештар нест шуда бошанд
+        pass 
     
     delivery_type = "АВИА" if call.data == "address_type_avia" else "НАЗЕМНЫЙ"
     user_data[chat_id] = {"delivery_type": delivery_type}
@@ -93,6 +92,75 @@ def handle_address_type_callback(call):
                            f"🇨🇳 Лутфан, номи худро **ТАНҲО бо ҳарфҳои лотинӣ** ворид кунед (масалан, *Ahmad*):")
     
     bot.register_next_step_handler(msg, address_step_name)
+
+
+# 🛠️ Функсияи интихоби навъи нархнома
+def choose_price_list_type(chat_id):
+    """Мепурсад, ки корбар нархномаи АВИА-ро мехоҳад ё НАЗЕМНЫЙ."""
+    text = "📦 *Нархномаи кадом навъи интиқолро мехоҳед дидан?*"
+    
+    markup = types.InlineKeyboardMarkup(row_width=2)
+    
+    markup.add(
+        types.InlineKeyboardButton("✈️ АВИА", callback_data="price_list_avia"),
+        types.InlineKeyboardButton("🚢 Интиқоли заминӣ", callback_data="price_list_ground")
+    )
+    
+    bot.send_message(chat_id, text, reply_markup=markup, parse_mode="Markdown")
+
+
+# 🛠️ Обработчик барои фиристодани нархнома (АВИА/НАЗЕМНЫЙ)
+@bot.callback_query_handler(func=lambda call: call.data.startswith('price_list_'))
+def send_price_list(call):
+    """Матн ва аксҳои нархномаро мувофиқи интихоби корбар мефиристад."""
+    chat_id = call.message.chat.id
+    delivery_type = "АВИА" if call.data == "price_list_avia" else "НАЗЕМНЫЙ"
+    
+    try:
+        bot.edit_message_reply_markup(chat_id, call.message.message_id, reply_markup=None) # Нест кардани тугмаҳо
+    except ApiTelegramException:
+        pass
+
+    # ==================== ID ва Матн барои АВИА ====================
+    if delivery_type == "АВИА":
+        # ⚠️ ID-и аксҳои АВИА-ро ин ҷо гузоред!
+        PHOTO_ID_1 = "AgACAgIAAxkBAAEC4IlpKccwfPAAARUDkxuoClWvrPcZ0OQAAsQPaxsLQlFJ3f2FHfHxa_4BAAMCAANzAAM2BA" 
+        
+        caption_text = (
+            "💰 *Нархномаи хизматрасониҳо - АВИА:*\n"
+            "---"
+            "• **Интиқоли ҳавоӣ:** Аз 3-7 рӯз\n"
+            "• **Нарх:** Аз **$10** барои 1 кг (Вобаста ба вазн)\n"
+            "• **Тавсия:** Барои борҳои сабук ва зурурӣ."
+        )
+
+    # ==================== ID ва Матн барои НАЗЕМНЫЙ ====================
+    else: # НАЗЕМНЫЙ
+        # ⚠️ ID-и аксҳои НАЗЕМНЫЙ-ро ин ҷо гузоред!
+        PHOTO_ID_1 = "AgACAgIAAxkBAAEC4IdpKcVghFbSiF0ImUUvAtaHdgnm1QACrQ9rGwtCUUk1QER1zuD_zgEAAwIAA3MAAzYE" 
+        
+        caption_text = (
+            "💰 *Нархномаи хизматрасониҳо - Интиқоли заминӣ:*\n"
+            "💰 *Нархномаи хизматрасониҳо:*\n"
+            "• Аз **200кг то 1000кг** — *$1.8$* барои 1 кг\n"
+            "• Аз **0.1кг то 200кг** — *$3.0$* барои 1 кг\n"
+                    "Барои тафсилоти бештар бо мо тамос гиред.",
+                              parse_mode="Markdown")
+
+    # ==================== Фиристодани Media Group ====================
+    media = [
+        # Акси 1 бо caption (матн)
+        types.InputMediaPhoto(PHOTO_ID_1, caption=caption_text, parse_mode="Markdown"),
+        # Акси 2 бидуни caption
+        types.InputMediaPhoto(PHOTO_ID_2)
+    ]
+
+    try:
+        bot.send_media_group(chat_id, media)
+    except Exception as e:
+        # Агар фиристодан хатогӣ диҳад, танҳо матнро мефиристем
+        print(f"Хатогӣ ҳангоми фиристодани гурӯҳи аксҳо: {e}")
+        bot.send_message(chat_id, f"❌ Хатогӣ ҳангоми фиристодани аксҳо.\n\n{caption_text}", parse_mode="Markdown")
 
 
 # ================== Основной обработчик ==================
@@ -109,19 +177,13 @@ def main_handler(message):
         choose_delivery_type(chat_id)
 
     elif text == BTN_PRICE_LIST:
-        bot.send_message(chat_id,
-                              "💰 *Нархномаи хизматрасониҳо:*\n"
-                              "• Аз **200кг то 1000кг** — *$1.8$* барои 1 кг\n"
-                              "• Аз **0.1кг то 200кг** — *$3.0$* барои 1 кг\n"
-                              "Барои тафсилоти бештар бо оператор тамос гиред.",
-                              parse_mode="Markdown")
+        # 🟢 Ҳоло ин тугма ба функсияи интихоби нархнома мегузарад
+        choose_price_list_type(chat_id) 
 
-    elif text == BTN_TRACK:
-        # 🟢 Истиноди дуруст барои канали TAJEXPRESSCARGO
-        track_link = "https://t.me/TAJEXPRESSTRACCOD" 
+    elif text == BTN_TRACK: 
+        track_link = "https://t.me/TAJEXPRESSCARGO" 
         markup = types.InlineKeyboardMarkup(row_width=1)
         
-        # 🟢 Тугма барои ворид шудан ба канал
         markup.add(types.InlineKeyboardButton("📢 Ба канали TAJEXPRESSCARGO ворид шавед", url=track_link))
         
         track_text = (
@@ -206,7 +268,6 @@ def address_step_name(message):
     chat_id = message.chat.id
     name = message.text.strip()
     
-    # Санҷиш барои гузариш аз қадами интихоби навъи интиқол
     if chat_id not in user_data or 'delivery_type' not in user_data[chat_id]:
         bot.send_message(chat_id, "❌ **Хатогӣ!** Лутфан, аз менюи асосӣ дубора оғоз кунед ва навъи интиқолро интихоб кунед.")
         send_main_menu(chat_id)
@@ -227,7 +288,6 @@ def address_step_phone(message):
     chat_id = message.chat.id
     phone = message.text.strip()
     
-    # Санҷиш барои мавҷудияти маълумот
     if chat_id not in user_data or 'name' not in user_data[chat_id]:
         bot.send_message(chat_id, "❌ **Хатогӣ!** Лутфан, аз менюи асосӣ дубора оғоз кунед.")
         send_main_menu(chat_id)
@@ -295,7 +355,6 @@ def show_about_us(chat_id):
 # ================== Запуск бота ==================
 if __name__ == "__main__":
     print("Бот запущен...")
-    # Истифодаи try/except барои кӯмак дар дарёфти мушкилоти пайвастшавӣ/хатогиҳо
     try:
         bot.infinity_polling()
     except Exception as e:
