@@ -141,7 +141,6 @@ def send_price_list(call):
         PHOTO_ID_1 = "ID_AXSI_GROUND_1_RO_INJO_GUZORED"
         PHOTO_ID_2 = "ID_AXSI_GROUND_2_RO_INJO_GUZORED" 
         
-        # 🟢 МАТНИ ИСЛОҲШУДАИ НАЗЕМНЫЙ
         caption_text = (
             "💰 *Нархномаи хизматрасониҳо - Интиқоли заминӣ:*\n"
             "---"
@@ -151,19 +150,26 @@ def send_price_list(call):
         )
 
     # ==================== Фиристодани Media Group ====================
-    media = [
-        # Акси 1 бо caption (матн)
-        types.InputMediaPhoto(PHOTO_ID_1, caption=caption_text, parse_mode="Markdown"),
-        # Акси 2 бидуни caption
-        types.InputMediaPhoto(PHOTO_ID_2)
-    ]
+    # Агар ID_2 placeholder бошад, танҳо як акс мефиристем
+    if PHOTO_ID_2 == "ID_AXSI_AVIA_2_RO_INJO_GUZORED" or PHOTO_ID_2 == "ID_AXSI_GROUND_2_RO_INJO_GUZORED":
+        try:
+             bot.send_photo(chat_id, PHOTO_ID_1, caption=caption_text, parse_mode="Markdown")
+        except Exception as e:
+            print(f"Хатогӣ ҳангоми фиристодани як акс: {e}")
+            bot.send_message(chat_id, f"❌ Хатогӣ ҳангоми фиристодани аксҳо.\n\n{caption_text}", parse_mode="Markdown")
 
-    try:
-        bot.send_media_group(chat_id, media)
-    except Exception as e:
-        # Агар фиристодан хатогӣ диҳад, танҳо матнро мефиристем
-        print(f"Хатогӣ ҳангоми фиристодани гурӯҳи аксҳо: {e}")
-        bot.send_message(chat_id, f"❌ Хатогӣ ҳангоми фиристодани аксҳо.\n\n{caption_text}", parse_mode="Markdown")
+    else:
+        # Агар ду акс мавҷуд бошад, Media Group мефиристем
+        media = [
+            types.InputMediaPhoto(PHOTO_ID_1, caption=caption_text, parse_mode="Markdown"),
+            types.InputMediaPhoto(PHOTO_ID_2)
+        ]
+        try:
+            bot.send_media_group(chat_id, media)
+        except Exception as e:
+            # Агар фиристодан хатогӣ диҳад, танҳо матнро мефиристем
+            print(f"Хатогӣ ҳангоми фиристодани гурӯҳи аксҳо: {e}")
+            bot.send_message(chat_id, f"❌ Хатогӣ ҳангоми фиристодани аксҳо.\n\n{caption_text}", parse_mode="Markdown")
 
 
 # ================== Основной обработчик ==================
@@ -180,7 +186,6 @@ def main_handler(message):
         choose_delivery_type(chat_id)
 
     elif text == BTN_PRICE_LIST:
-        # 🟢 Ҳоло ин тугма ба функсияи интихоби нархнома мегузарад
         choose_price_list_type(chat_id) 
 
     elif text == BTN_TRACK: 
@@ -204,6 +209,7 @@ def main_handler(message):
                               parse_mode="Markdown")
 
     elif text == BTN_BANNED:
+        # 🟢 Блоки ислоҳшуда
         bot.send_message(chat_id,
                               "⚠️ *Рӯйхати маҳсулотҳои манъшуда барои интиқол:*\n"
                               "---"
@@ -244,7 +250,23 @@ def delivery_step_address(message):
 
 def delivery_step_phone(message):
     chat_id = message.chat.id
-    user_data[chat_id]["phone"] = message.text.strip()
+    phone = message.text.strip()
+    
+    # 🟢 Тасдиқкунии (Validation) формати +992 ё 9 рақам
+    # (9 рақамро талаб мекунад ва ба +992 иваз мекунад)
+    phone_pattern = re.compile(r"^(?:\+992|8|\+7)?\s*(\d{9})$") 
+    match = phone_pattern.match(phone.replace(" ", ""))
+
+    if not match:
+        msg = bot.send_message(chat_id, 
+                               "❌ **Хатогӣ!** Лутфан, рақамро бо формати **9 рақам** ворид кунед (мисол: `985171732`).")
+        bot.register_next_step_handler(msg, delivery_step_phone)
+        return
+
+    # Рақами асосии 9-гонаро ҷудо мекунем:
+    main_phone = match.group(1)
+    
+    user_data[chat_id]["phone"] = f"+992{main_phone}" # 👈 Формати ниҳоиро +992 месозем
     data = user_data[chat_id]
     
     delivery_text = (
@@ -296,7 +318,20 @@ def address_step_phone(message):
         send_main_menu(chat_id)
         return
 
-    user_data[chat_id]["phone"] = phone
+    # 🟢 Тасдиқкунии (Validation) формати +992 ё 9 рақам
+    phone_pattern = re.compile(r"^(?:\+992|8|\+7)?\s*(\d{9})$") 
+    match = phone_pattern.match(phone.replace(" ", ""))
+
+    if not match:
+        msg = bot.send_message(chat_id, 
+                               "❌ **Хатогӣ!** Лутфан, рақамро бо формати **9 рақам** ворид кунед (мисол: `985171732`).")
+        bot.register_next_step_handler(msg, address_step_phone)
+        return
+        
+    # Рақами асосии 9-гонаро ҷудо мекунем:
+    main_phone = match.group(1)
+
+    user_data[chat_id]["phone"] = f"+992{main_phone}" # 👈 Формати ниҳоиро +992 месозем
     data = user_data[chat_id]
     
     delivery_type = data.get('delivery_type', 'Номаълум')
