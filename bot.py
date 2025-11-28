@@ -114,7 +114,7 @@ def choose_price_list_type(chat_id):
 def send_price_list(call):
     """Матн ва аксҳои нархномаро мувофиқи интихоби корбар мефиристад."""
     chat_id = call.message.chat.id
-    delivery_type = "Интиқоли ҳавоӣ (АВИА)" if call.data == "price_list_avia" else "Интиқоли заминӣ"
+    delivery_type = "АВИА" if call.data == "price_list_avia" else "НАЗЕМНЫЙ"
     
     try:
         bot.edit_message_reply_markup(chat_id, call.message.message_id, reply_markup=None) # Нест кардани тугмаҳо
@@ -122,13 +122,12 @@ def send_price_list(call):
         pass
 
     # ==================== ID ва Матн барои АВИА ====================
-    if delivery_type == "Интиқоли ҳавоӣ (АВИА)":
-        # ⚠️ ID-и аксҳои АВИА-ро ин ҷо гузоред!
-        PHOTO_ID_1 = "AgACAgIAAxkBAAEC4IlpKccwfPAAARUDkxuoClWvrPcZ0OQAAsQPaxsLQlFJ3f2FHfHxa_4BAAMCAAN5AAM2BA" # Агар акси дуюм набошад, ID-ро такрор кунед
-        PHOTO_ID_2 = "AgACAgIAAxkBAAEC4IlpKccwfPAAARUDkxuoClWvrPcZ0OQAAsQPaxsLQlFJ3f2FHfHxa_4BAAMCAAN5AAM2BA"
+    if delivery_type == "АВИА":
+        # ⚠️ ID-и акси АВИА-ро ин ҷо ГУЗОРЕД
+        PHOTO_ID_1 = "ID_AXSI_AVIA_1_RO_INJO_GUZORED" 
         
         caption_text = (
-            "💰 *Нархномаи хизматрасониҳо - Интиқоли ҳавоӣ (АВИА):*\n"
+            "💰 *Нархномаи хизматрасониҳо - АВИА:*\n"
             "---"
             "• **Интиқоли ҳавоӣ:** Аз 3-7 рӯз\n"
             "• **Нарх:** Аз **$10** барои 1 кг (Вобаста ба вазн)\n"
@@ -137,9 +136,8 @@ def send_price_list(call):
 
     # ==================== ID ва Матн барои НАЗЕМНЫЙ ====================
     else: # НАЗЕМНЫЙ
-        # ⚠️ ID-и аксҳои НАЗЕМНЫЙ-ро ин ҷо гузоред!
-        PHOTO_ID_1 = "AgACAgIAAxkBAAEC4IdpKcVghFbSiF0ImUUvAtaHdgnm1QACrQ9rGwtCUUk1QER1zuD_zgEAAwIAA3gAAzYE"
-        PHOTO_ID_2 = "AgACAgIAAxkBAAEC4IdpKcVghFbSiF0ImUUvAtaHdgnm1QACrQ9rGwtCUUk1QER1zuD_zgEAAwIAA3gAAzYE" 
+        # ⚠️ ID-и акси НАЗЕМНЫЙ-ро ин ҷо ГУЗОРЕД
+        PHOTO_ID_1 = "ID_AXSI_GROUND_1_RO_INJO_GUZORED"
         
         caption_text = (
             "💰 *Нархномаи хизматрасониҳо - Интиқоли заминӣ:*\n"
@@ -149,28 +147,15 @@ def send_price_list(call):
             "Барои тафсилоти бештар бо оператор тамос гиред."
         )
 
-    # ==================== Фиристодани Media Group ====================
-    # Агар ID_2 placeholder бошад, танҳо як акс мефиристем
-    if PHOTO_ID_2 == "ID_AXSI_AVIA_2_RO_INJO_GUZORED" or PHOTO_ID_2 == "ID_AXSI_GROUND_2_RO_INJO_GUZORED":
-        try:
-             bot.send_photo(chat_id, PHOTO_ID_1, caption=caption_text, parse_mode="Markdown")
-        except Exception as e:
-            print(f"Хатогӣ ҳангоми фиристодани як акс: {e}")
-            bot.send_message(chat_id, f"❌ Хатогӣ ҳангоми фиристодани аксҳо.\n\n{caption_text}", parse_mode="Markdown")
-
-    else:
-        # Агар ду акс мавҷуд бошад, Media Group мефиристем
-        media = [
-            types.InputMediaPhoto(PHOTO_ID_1, caption=caption_text, parse_mode="Markdown"),
-            types.InputMediaPhoto(PHOTO_ID_2)
-        ]
-        try:
-            bot.send_media_group(chat_id, media)
-        except Exception as e:
-            # Агар фиристодан хатогӣ диҳад, танҳо матнро мефиристем
-            print(f"Хатогӣ ҳангоми фиристодани гурӯҳи аксҳо: {e}")
-            bot.send_message(chat_id, f"❌ Хатогӣ ҳангоми фиристодани аксҳо.\n\n{caption_text}", parse_mode="Markdown")
-
+    # ==================== Фиристодани як Акс ====================
+    try:
+        # 🟢 send_photo барои фиристодани як акс истифода мешавад
+        bot.send_photo(chat_id, PHOTO_ID_1, caption=caption_text, parse_mode="Markdown")
+    except Exception as e:
+        # Агар фиристодан хатогӣ диҳад (сабаби эҳтимолӣ ID-и нодуруст аст)
+        print(f"❌ Хатогӣ ҳангоми фиристодани акс: {e}")
+        # Танҳо матнро мефиристем
+        bot.send_message(chat_id, f"❌ Хатогӣ ҳангоми фиристодани аксҳо.\n\n{caption_text}", parse_mode="Markdown")
 
 # ================== Основной обработчик ==================
 @bot.message_handler(func=lambda m: True)
