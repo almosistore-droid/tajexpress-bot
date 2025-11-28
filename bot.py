@@ -36,22 +36,21 @@ BTN_PRICE_LIST = "📦 Нархнома"
 BTN_TRACK = "🔍 Проверка трек-кода"
 BTN_BANNED = "🚫 Молхои манъшуда"
 BTN_CONTACTS = "📞 Контакты"
+# ❌ BTN_REGISTER хориҷ карда шуд
 BTN_ABOUT_US = "ℹ️ Информация о нас"
 
 MAIN_MENU = [
-    [BTN_REGISTER],
+    # ❌ Сатри [BTN_REGISTER] хориҷ карда шуд
     [BTN_DELIVERY, BTN_ADDRESS],
     [BTN_TRACK, BTN_DUSHANBE],
     [BTN_PRICE_LIST, BTN_BANNED],
     [BTN_CONTACTS, BTN_ABOUT_US]
 ]
 
-# 🛠️ ТАҒЙИРОТ ДАР ИН ФУНКСИЯ: Иловаи parse_mode
 def send_main_menu(chat_id, text="Менюи асосӣ. Лутфан, интихоб кунед:"):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     for row in MAIN_MENU:
         markup.add(*[types.KeyboardButton(button_text) for button_text in row])
-    # Истифодаи Markdown барои паём
     bot.send_message(chat_id, text, reply_markup=markup, parse_mode="Markdown")
 
 # ================== START ==================
@@ -65,7 +64,6 @@ def start_handler(message):
         "🇨🇳 *Суроғаи қулай дар Чин* барои харидҳои шумо\n\n"
         "Менюи зерро интихоб кунед:"
     )
-    # 🛠️ ТАҒЙИРОТ ДАР ИН ФУНКСИЯ: Муттаҳид кардани паём
     send_main_menu(chat_id, welcome_text)
 
 # ================== Основной обработчик ==================
@@ -74,7 +72,9 @@ def main_handler(message):
     chat_id = message.chat.id
     text = message.text
 
-    elif text == BTN_DELIVERY:
+    # ❌ Блоки if text == BTN_REGISTER: хориҷ карда шуд
+
+    if text == BTN_DELIVERY:
         msg = bot.send_message(chat_id, "🚚 Лутфан, номи пурраи гирандаро ворид кунед:")
         bot.register_next_step_handler(msg, delivery_step_name)
 
@@ -92,7 +92,7 @@ def main_handler(message):
 
     elif text == BTN_TRACK:
         # Логикаи фиристодани ссылка
-        track_link = "https://t.me/TAJEXPRESSTRACCOD" 
+        track_link = "https://t.me/TAJEXPRETACCOD" 
         markup = types.InlineKeyboardMarkup(row_width=1)
         markup.add(types.InlineKeyboardButton("🔍 Барои тафтиши треккод ворид шавед", url=track_link))
         track_text = (
@@ -133,6 +133,11 @@ def main_handler(message):
     else:
         bot.send_message(chat_id, "Ин фармон шинохта нашуд. Лутфан, тугмаи менюро истифода баред.")
         send_main_menu(chat_id)
+
+
+# ❌ Функсияҳои register_step_name ва register_step_phone пурра хориҷ карда шуданд.
+
+
 # ================== Доставка ==================
 def delivery_step_name(message):
     chat_id = message.chat.id
@@ -216,7 +221,7 @@ def show_about_us(chat_id):
     text = "ℹ️ *Мо дар шабакаҳои иҷтимоӣ:*\n\n"
     markup = types.InlineKeyboardMarkup(row_width=1)
     
-    markup.add(types.InlineKeyboardButton("📢 Канали Telegram", url="https://t.me/TAJEXPRESSTRACCOD"))
+    markup.add(types.InlineKeyboardButton("📢 Канали Telegram", url="https://t.me/TAJEXPRESSCARGO"))
     markup.add(types.InlineKeyboardButton("📸 Саҳифаи Instagram", url="https://www.instagram.com/taj_express01?igsh=ZmcxdHE4eXI0aWc1")) 
     
     bot.send_message(chat_id, text, reply_markup=markup, parse_mode="Markdown")
