@@ -124,7 +124,8 @@ def send_price_list(call):
     # ==================== ID ва Матн барои АВИА ====================
     if delivery_type == "АВИА":
         # ⚠️ ID-и аксҳои АВИА-ро ин ҷо гузоред!
-        PHOTO_ID_1 = "AgACAgIAAxkBAAEC4IlpKccwfPAAARUDkxuoClWvrPcZ0OQAAsQPaxsLQlFJ3f2FHfHxa_4BAAMCAANzAAM2BA" 
+        PHOTO_ID_1 = "ID_AXSI_AVIA_1_RO_INJO_GUZORED" # Агар акси дуюм набошад, ID-ро такрор кунед
+        PHOTO_ID_2 = "ID_AXSI_AVIA_2_RO_INJO_GUZORED"
         
         caption_text = (
             "💰 *Нархномаи хизматрасониҳо - АВИА:*\n"
@@ -137,15 +138,16 @@ def send_price_list(call):
     # ==================== ID ва Матн барои НАЗЕМНЫЙ ====================
     else: # НАЗЕМНЫЙ
         # ⚠️ ID-и аксҳои НАЗЕМНЫЙ-ро ин ҷо гузоред!
-        PHOTO_ID_1 = "AgACAgIAAxkBAAEC4IdpKcVghFbSiF0ImUUvAtaHdgnm1QACrQ9rGwtCUUk1QER1zuD_zgEAAwIAA3MAAzYE" 
+        PHOTO_ID_1 = "ID_AXSI_GROUND_1_RO_INJO_GUZORED"
+        PHOTO_ID_2 = "ID_AXSI_GROUND_2_RO_INJO_GUZORED" 
         
+        # 🟢 МАТНИ ИСЛОҲШУДАИ НАЗЕМНЫЙ
         caption_text = (
             "💰 *Нархномаи хизматрасониҳо - Интиқоли заминӣ:*\n"
-            "💰 *Нархномаи хизматрасониҳо:*\n"
+            "---"
             "• Аз **200кг то 1000кг** — *$1.8$* барои 1 кг\n"
             "• Аз **0.1кг то 200кг** — *$3.0$* барои 1 кг\n"
-                    "Барои тафсилоти бештар бо мо тамос гиред.",
-                              parse_mode="Markdown"
+            "Барои тафсилоти бештар бо оператор тамос гиред."
         )
 
     # ==================== Фиристодани Media Group ====================
@@ -203,160 +205,4 @@ def main_handler(message):
 
     elif text == BTN_BANNED:
         bot.send_message(chat_id,
-                              "⚠️ *Рӯйхати маҳсулотҳои манъшуда барои интиқол:*\n"
-                              "---"
-                              "🔥 1. **Маводҳои тарканда** (аз қабили пиротехника)\n"
-                              "🔋 2. **Батареяҳо, аккумуляторҳо, магнитҳо ва повербанкҳо** (дар шакли алоҳида)\n"
-                              "🥗 3. **Хӯрокворӣ, тухмӣ ва шинонандаҳо**\n"
-                              "🔫 4. **Ҳарбу зарфҳо, кастет ва кордҳо** (ғайриқонунӣ)\n"
-                              "⛽ 5. **Маводи сӯзишворӣ, равған ва косметикаи моеъ**\n"
-                              "💎 6. **Нуқра, тилло ва маҳсулоти қиматбаҳо**\n"
-                              "💧 7. **Моеъҳо, аэрозолҳо ва кимиёвӣ** (дар ҳаҷми калон)\n"
-                              "🔞 8. **Ҳама намуд маҳсулотҳои 18+** (маводҳои порнографӣ, бозичаҳои ҷинсӣ ва ғайра)\n\n"
-                              "_Лутфан, пеш аз фиристодан, ин рӯйхатро бодиққат хонед._",
-                              parse_mode="Markdown")
-
-    elif text == BTN_CONTACTS:
-        show_contacts(chat_id)
-    
-    elif text == BTN_ABOUT_US:
-        show_about_us(chat_id)
-
-    else:
-        bot.send_message(chat_id, "Ин фармон шинохта нашуд. Лутфан, тугмаи менюро истифода баред.")
-        send_main_menu(chat_id)
-
-
-# ================== Доставка ==================
-def delivery_step_name(message):
-    chat_id = message.chat.id
-    user_data[chat_id] = {"name": message.text.strip()}
-    msg = bot.send_message(chat_id, "📍 Лутфан, адреси пурраи худро ворид кунед:")
-    bot.register_next_step_handler(msg, delivery_step_address)
-
-def delivery_step_address(message):
-    chat_id = message.chat.id
-    user_data[chat_id]["address"] = message.text.strip()
-    msg = bot.send_message(chat_id, "📞 Лутфан, рақами телефонро ворид кунед:")
-    bot.register_next_step_handler(msg, delivery_step_phone)
-
-def delivery_step_phone(message):
-    chat_id = message.chat.id
-    user_data[chat_id]["phone"] = message.text.strip()
-    data = user_data[chat_id]
-    
-    delivery_text = (
-        "📦 *Новая заявка на доставку*\n"
-        "---"
-        f"👤 **Имя получателя:** {data['name']}\n"
-        f"📍 **Адрес:** {data['address']}\n"
-        f"📞 **Телефон:** {data['phone']}"
-    )
-    
-    try:
-        if DELIVERY_GROUP_ID != 0:
-            bot.send_message(DELIVERY_GROUP_ID, delivery_text, parse_mode="Markdown")
-        bot.send_message(chat_id, "✅ **Заявка на доставку принята!**\nВ ближайшее время с Вами свяжется наш менеджер.", parse_mode="Markdown")
-    except ApiTelegramException as e:
-        error_msg = f"❌ Ошибка отправки заявки в группу (ID: {DELIVERY_GROUP_ID}). Проверьте настройки: {e}"
-        print(error_msg)
-        bot.send_message(chat_id, f"❌ Ошибка отправки заявки. Пожалуйста, попробуйте позже или свяжитесь с нами напрямую.")
-    send_main_menu(chat_id)
-
-
-# ================== Адрес (Бо тағйироти НИҲОӢ) ==================
-def address_step_name(message):
-    chat_id = message.chat.id
-    name = message.text.strip()
-    
-    if chat_id not in user_data or 'delivery_type' not in user_data[chat_id]:
-        bot.send_message(chat_id, "❌ **Хатогӣ!** Лутфан, аз менюи асосӣ дубора оғоз кунед ва навъи интиқолро интихоб кунед.")
-        send_main_menu(chat_id)
-        return
-        
-    if not re.match(r"^[A-Za-z\s]+$", name):
-        msg = bot.send_message(chat_id, "❌ **Хатогӣ!** Танҳо ҳарфҳои лотинӣ истифода баред. Лутфан, дубора ворид кунед:")
-        bot.register_next_step_handler(msg, address_step_name)
-        return
-        
-    user_data[chat_id]["name"] = name 
-    
-    msg = bot.send_message(chat_id, "📞 Лутфан, рақами телефони худро ворид кунед:")
-    bot.register_next_step_handler(msg, address_step_phone)
-
-
-def address_step_phone(message):
-    chat_id = message.chat.id
-    phone = message.text.strip()
-    
-    if chat_id not in user_data or 'name' not in user_data[chat_id]:
-        bot.send_message(chat_id, "❌ **Хатогӣ!** Лутфан, аз менюи асосӣ дубора оғоз кунед.")
-        send_main_menu(chat_id)
-        return
-
-    user_data[chat_id]["phone"] = phone
-    data = user_data[chat_id]
-    
-    delivery_type = data.get('delivery_type', 'Номаълум')
-    
-    
-    # ====================================================================
-    # ✈️ Логикаи АВИА ва НАЗЕМНЫЙ (Ҳарду бо формати мукаммал)
-    # ====================================================================
-    if delivery_type == "АВИА":
-        # Маълумот барои АВИА (Суроғаи Sam)
-        base_address_cn = "北京市通州区葛布店南里5号楼151"
-        contact_phone_cn = "17813714041" 
-        
-    else: # 🚢 НАЗЕМНЫЙ (Ё Номаълум)
-        # Маълумот барои НАЗЕМНЫЙ (Суроғаи пешина)
-        base_address_cn = "浙江省 金华市 义乌市 福田三小区80栋二单元305室"
-        contact_phone_cn = "17590820846"
-        
-    # 🛠️ ФОРМАТИ НИҲОИИ МУҚАРРАРШУДА: [Номи мизоҷ] [Телефони Чин] [Адреси Чин] [Номи мизоҷ] [Телефони корбар]
-    china_address_format = (
-        f"{data['name']} {contact_phone_cn} {base_address_cn} {data['name']} {data['phone']}"
-    )
-    # ====================================================================
-    
-    full_address = (
-        f"✅ **Адреси пурра барои харидҳо дар Чин:**\n"
-        f"**Тип доставки:** *{delivery_type}*\n"
-        f"Номи мизоҷ: *{data['name']}*\n"
-        f"Телефон: *{data['phone']}*\n"
-        f"---"
-        f"📝 **Барои истифода дар сайтҳои Чин:**\n"
-        f"`{china_address_format}`"
-    )
-    
-    bot.send_message(chat_id, full_address, parse_mode="Markdown")
-    send_main_menu(chat_id)
-
-# ================== Контакты ==================
-def show_contacts(chat_id):
-    text = "📞 *Барои тамос бо TAJEXPRESS, яке аз рақамҳои зеринро интихоб кунед:*\n\n"
-    markup = types.InlineKeyboardMarkup(row_width=1)
-    
-    markup.add(types.InlineKeyboardButton("📱 Менеҷер: +992 985 171 732", url="https://t.me/zubaidullo_tjk"))
-    markup.add(types.InlineKeyboardButton("📱 Менеҷер: +992 933 055 707", url="https://t.me/zubaidullo_tjk"))
-    markup.add(types.InlineKeyboardButton("📱 Менеҷер: +992 007 282 626", url="https://t.me/Fayoz_7707"))
-    
-    bot.send_message(chat_id, text, reply_markup=markup, parse_mode="Markdown")
-
-# ================== Маълумот дар бораи мо ==================
-def show_about_us(chat_id):
-    text = "ℹ️ *Мо дар шабакаҳои иҷтимоӣ:*\n\n"
-    markup = types.InlineKeyboardMarkup(row_width=1)
-    
-    markup.add(types.InlineKeyboardButton("📢 Канали Telegram", url="https://t.me/TAJEXPRESSCARGO"))
-    markup.add(types.InlineKeyboardButton("📸 Саҳифаи Instagram", url="https://www.instagram.com/taj_express01?igsh=ZmcxdHE4eXI0aWc1")) 
-    
-    bot.send_message(chat_id, text, reply_markup=markup, parse_mode="Markdown")
-
-# ================== Запуск бота ==================
-if __name__ == "__main__":
-    print("Бот запущен...")
-    try:
-        bot.infinity_polling()
-    except Exception as e:
-        print(f"❌ Хатогии глобалӣ ҳангоми кор: {e}")
+                              "⚠️ *Р
