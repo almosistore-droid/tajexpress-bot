@@ -233,20 +233,20 @@ def address_step_phone(message):
     # ====================================================================
     if delivery_type == "АВИА":
         # Маълумот барои АВИА (Суроғаи Sam)
-        base_address_cn = "北京市通州区葛布店南里5号楼151"
+        base_address_cn = "17813714041 北京市通州区葛布店南里5号楼151"
         contact_phone_cn = "17813714041" 
         
         # Формати АВИА: [Адрес] [Ном] [Телефон]
-        china_address_format = f"{base_address_cn} {data['name']} {contact_phone_cn}"
+        f"`{data['name']} 17813714041 北京市通州区葛布店南里5号楼151 {data['name']} {data['phone']}`"
         
     else: # НАЗЕМНЫЙ (Ё Номаълум)
         # Маълумот барои НАЗЕМНЫЙ (Суроғаи пешина)
-        base_address_cn = "浙江省 金华市 义乌市 福田三小区80栋二单元305室"
+        base_address_cn = "17590820846 浙江省 金华市 义乌市 福田三小区80栋二单元305室"
         contact_phone_cn = "17590820846"
         
         # Формати НАЗЕМНЫЙ: [Ном] [Телефон Чин] [Адрес] [Ном] [Телефон корбар]
         china_address_format = (
-            f"{data['name']} {contact_phone_cn} {base_address_cn} {data['name']} {data['phone']}"
+            f"`{data['name']} 17590820846 浙江省 金华市 义乌市 福田三小区80栋二单元305室 {data['name']} {data['phone']}`"
         )
     # ====================================================================
     
@@ -262,7 +262,6 @@ def address_step_phone(message):
     
     bot.send_message(chat_id, full_address, parse_mode="Markdown")
     send_main_menu(chat_id)
-
 # ================== Контакты ==================
 def show_contacts(chat_id):
     text = "📞 *Барои тамос бо TAJEXPRESS, яке аз рақамҳои зеринро интихоб кунед:*\n\n"
