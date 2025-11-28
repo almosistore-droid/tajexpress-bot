@@ -33,7 +33,7 @@ BTN_PRICE_LIST = "📦 Нархнома"
 BTN_TRACK = "🔍 Проверка трек-кода"
 BTN_BANNED = "🚫 Молхои манъшуда"
 BTN_CONTACTS = "📞 Контакты"
-BTN_ABOUT_US = "ℹ️ Информация о нас"
+BTN_ABOUT_US = "ℹ️ Маълумот дар бораи мо"
 
 MAIN_MENU = [
     [BTN_DELIVERY, BTN_ADDRESS],
@@ -63,13 +63,13 @@ def start_handler(message):
 
 # 🛠️ Функсияи интихоби навъи интиқол барои гирифтани адрес
 def choose_delivery_type(chat_id):
-    text = "✈️ *Лутфан, навъи интиқолеро, ки мехоҳед истифода баред, интихоб кунед:*"
+    text = "✈️ *Лутфан, навъи интиқолро интихоб кунед:*"
     
     markup = types.InlineKeyboardMarkup(row_width=2)
     
     markup.add(
-        types.InlineKeyboardButton("✈️ АВИА", callback_data="address_type_avia"),
-        types.InlineKeyboardButton("🚢 НАЗЕМНЫЙ", callback_data="address_type_ground")
+        types.InlineKeyboardButton("✈️ Интиқоли ҳавоӣ (АВИА)", callback_data="address_type_avia"),
+        types.InlineKeyboardButton("🚢 Интиқоли заминӣ", callback_data="address_type_ground")
     )
     
     bot.send_message(chat_id, text, reply_markup=markup, parse_mode="Markdown")
@@ -84,7 +84,7 @@ def handle_address_type_callback(call):
     except ApiTelegramException:
         pass 
     
-    delivery_type = "АВИА" if call.data == "address_type_avia" else "НАЗЕМНЫЙ"
+    delivery_type = "Интиқоли ҳавоӣ (АВИА)" if call.data == "address_type_avia" else "Интиқоли заминӣ"
     user_data[chat_id] = {"delivery_type": delivery_type}
 
     msg = bot.send_message(chat_id, 
@@ -96,13 +96,13 @@ def handle_address_type_callback(call):
 
 # 🛠️ Функсияи интихоби навъи нархнома
 def choose_price_list_type(chat_id):
-    """Мепурсад, ки корбар нархномаи АВИА-ро мехоҳад ё НАЗЕМНЫЙ."""
+    """Мепурсад, ки корбар нархномаи АВИА-ро мехоҳад ё Интиқоли заминӣ."""
     text = "📦 *Нархномаи кадом навъи интиқолро мехоҳед дидан?*"
     
     markup = types.InlineKeyboardMarkup(row_width=2)
     
     markup.add(
-        types.InlineKeyboardButton("✈️ АВИА", callback_data="price_list_avia"),
+        types.InlineKeyboardButton("✈️ Интиқоли ҳавоӣ (АВИА)", callback_data="price_list_avia"),
         types.InlineKeyboardButton("🚢 Интиқоли заминӣ", callback_data="price_list_ground")
     )
     
@@ -114,7 +114,7 @@ def choose_price_list_type(chat_id):
 def send_price_list(call):
     """Матн ва аксҳои нархномаро мувофиқи интихоби корбар мефиристад."""
     chat_id = call.message.chat.id
-    delivery_type = "АВИА" if call.data == "price_list_avia" else "НАЗЕМНЫЙ"
+    delivery_type = "Интиқоли ҳавоӣ (АВИА)" if call.data == "price_list_avia" else "Интиқоли заминӣ"
     
     try:
         bot.edit_message_reply_markup(chat_id, call.message.message_id, reply_markup=None) # Нест кардани тугмаҳо
@@ -122,13 +122,13 @@ def send_price_list(call):
         pass
 
     # ==================== ID ва Матн барои АВИА ====================
-    if delivery_type == "АВИА":
+    if delivery_type == "Интиқоли ҳавоӣ (АВИА)":
         # ⚠️ ID-и аксҳои АВИА-ро ин ҷо гузоред!
-        PHOTO_ID_1 = "ID_AXSI_AVIA_1_RO_INJO_GUZORED" # Агар акси дуюм набошад, ID-ро такрор кунед
-        PHOTO_ID_2 = "ID_AXSI_AVIA_2_RO_INJO_GUZORED"
+        PHOTO_ID_1 = "AgACAgIAAxkBAAEC4IlpKccwfPAAARUDkxuoClWvrPcZ0OQAAsQPaxsLQlFJ3f2FHfHxa_4BAAMCAAN5AAM2BA" # Агар акси дуюм набошад, ID-ро такрор кунед
+        PHOTO_ID_2 = "AgACAgIAAxkBAAEC4IlpKccwfPAAARUDkxuoClWvrPcZ0OQAAsQPaxsLQlFJ3f2FHfHxa_4BAAMCAAN5AAM2BA"
         
         caption_text = (
-            "💰 *Нархномаи хизматрасониҳо - АВИА:*\n"
+            "💰 *Нархномаи хизматрасониҳо - Интиқоли ҳавоӣ (АВИА):*\n"
             "---"
             "• **Интиқоли ҳавоӣ:** Аз 3-7 рӯз\n"
             "• **Нарх:** Аз **$10** барои 1 кг (Вобаста ба вазн)\n"
@@ -138,8 +138,8 @@ def send_price_list(call):
     # ==================== ID ва Матн барои НАЗЕМНЫЙ ====================
     else: # НАЗЕМНЫЙ
         # ⚠️ ID-и аксҳои НАЗЕМНЫЙ-ро ин ҷо гузоред!
-        PHOTO_ID_1 = "ID_AXSI_GROUND_1_RO_INJO_GUZORED"
-        PHOTO_ID_2 = "ID_AXSI_GROUND_2_RO_INJO_GUZORED" 
+        PHOTO_ID_1 = "AgACAgIAAxkBAAEC4IdpKcVghFbSiF0ImUUvAtaHdgnm1QACrQ9rGwtCUUk1QER1zuD_zgEAAwIAA3gAAzYE"
+        PHOTO_ID_2 = "AgACAgIAAxkBAAEC4IdpKcVghFbSiF0ImUUvAtaHdgnm1QACrQ9rGwtCUUk1QER1zuD_zgEAAwIAA3gAAzYE" 
         
         caption_text = (
             "💰 *Нархномаи хизматрасониҳо - Интиқоли заминӣ:*\n"
