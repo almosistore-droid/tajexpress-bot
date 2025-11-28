@@ -36,7 +36,6 @@ BTN_PRICE_LIST = "📦 Нархнома"
 BTN_TRACK = "🔍 Проверка трек-кода"
 BTN_BANNED = "🚫 Молхои манъшуда"
 BTN_CONTACTS = "📞 Контакты"
-BTN_REGISTER = "📝 Регистрация"
 BTN_ABOUT_US = "ℹ️ Информация о нас"
 
 MAIN_MENU = [
@@ -74,10 +73,6 @@ def start_handler(message):
 def main_handler(message):
     chat_id = message.chat.id
     text = message.text
-
-    if text == BTN_REGISTER:
-        msg = bot.send_message(chat_id, "📝 **Барои бақайдгирӣ** лутфан, номи худро ворид кунед:")
-        bot.register_next_step_handler(msg, register_step_name)
 
     elif text == BTN_DELIVERY:
         msg = bot.send_message(chat_id, "🚚 Лутфан, номи пурраи гирандаро ворид кунед:")
@@ -138,29 +133,6 @@ def main_handler(message):
     else:
         bot.send_message(chat_id, "Ин фармон шинохта нашуд. Лутфан, тугмаи менюро истифода баред.")
         send_main_menu(chat_id)
-
-
-# ================== Регистрация (Танҳо паём) ==================
-def register_step_name(message):
-    chat_id = message.chat.id
-    user_data[chat_id] = {"name": message.text.strip()}
-    msg = bot.send_message(chat_id, "📞 Рақами телефони худро (дар формати +992 XXX XX XX XX) ворид кунед:")
-    bot.register_next_step_handler(msg, register_step_phone)
-
-def register_step_phone(message):
-    chat_id = message.chat.id
-    phone = message.text.strip()
-    user_data[chat_id]["phone"] = phone
-    
-    bot.send_message(chat_id,
-                     f"✅ **Бақайдгирии шумо бо муваффақият анҷом ёфт!**\n"
-                     f"👤 Ном: *{user_data[chat_id]['name']}*\n"
-                     f"📞 Тел: *{phone}*\n\n"
-                     "Шумо метавонед аз менюи асосӣ хизматрасонии лозимаро интихоб кунед.\n\n"
-                     "⚠️ _Эзоҳ: Маълумоти бақайдгирӣ ҳоло танҳо дар чати шумо нигоҳ дошта мешавад. Лутфан, бо оператор тамос гиред._",
-                     parse_mode="Markdown")
-    send_main_menu(chat_id)
-
 # ================== Доставка ==================
 def delivery_step_name(message):
     chat_id = message.chat.id
