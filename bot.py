@@ -116,14 +116,17 @@ def main_handler(message):
                               "Барои тафсилоти бештар бо оператор тамос гиред.",
                               parse_mode="Markdown")
 
-    elif text == BTN_TRACK:
-        # ⚠️ Ин номи каналро бо номи дурусти канали худ иваз кунед
-        track_link = "https://t.me/TAJEXPRESS_TRACKING_CHANNEL" 
+elif text == BTN_TRACK:
+        # 🟢 Истиноди дуруст барои канали TAJEXPRESSCARGO
+        track_link = "https://t.me/TAJEXPRESSCARGO" 
         markup = types.InlineKeyboardMarkup(row_width=1)
-        markup.add(types.InlineKeyboardButton("🔍 Барои тафтиши треккод ворид шавед", url=track_link))
+        
+        # 🟢 Тугма барои ворид шудан ба канал
+        markup.add(types.InlineKeyboardButton("📢 Ба канали TAJEXPRESSCARGO ворид шавед", url=track_link))
+        
         track_text = (
             "🔍 Барои тафтиши трек-коди худ, лутфан ба канали мо ворид шавед.\n\n"
-            "Ба тугмаи зерин пахш кунед:"
+            "*Ҳамаи трек-кодҳои воридшуда ва тафтишшуда дар ин канал нашр мешаванд.*"
         )
         bot.send_message(chat_id, track_text, reply_markup=markup, parse_mode="Markdown")
         
