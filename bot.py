@@ -41,17 +41,22 @@ user_cache = {}
 
 # ================== Подключение к Google Sheets ==================
 if not os.path.isfile(GOOGLE_CREDS_PATH):
+    # Агар файл ёфт нашавад, кодро қатъ мекунад
     raise RuntimeError(f"❌ Файл Google credentials не найден: {GOOGLE_CREDS_PATH}")
 
-with open(GOOGLE_CREDS_PATH, "r") as f:
-    creds_dict = json.load(f)
+try:
+    with open(GOOGLE_CREDS_PATH, "r") as f:
+        creds_dict = json.load(f)
+except Exception as e:
+    raise RuntimeError(f"❌ Ошибка чтения файла credentials.json: {e}")
+
 
 scope = ["https://www.googleapis.com/auth/spreadsheets",
          "https://www.googleapis.com/auth/drive"]
 creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
 gc = gspread.authorize(creds)
 
-# --- БАХШИ НАВ: САНҶИШИ ИМКОНИЯТИ ПАЙВАСТШАВӢ ---
+# --- САНҶИШИ ИМКОНИЯТИ ПАЙВАСТШАВӢ ---
 TRACKS_SHEET = None
 USERS_SHEET = None
 TRACKS_SHEET_NAME = "Tracks" 
@@ -65,7 +70,7 @@ try:
     except gspread.WorksheetNotFound:
         USERS_SHEET = None
 except Exception as e:
-    print(f"❌ Ошибка подключения к таблице Google Sheets: {e}")
+    print(f"❌ Ошибка подключения к таблице Google Sheets: {e}. Проверьте дастрасӣ!")
 # ---------------------------------------------------
 
 # ================== Меню ==================
@@ -77,20 +82,25 @@ BTN_TRACK = "🔍 Проверка трек-кода"
 BTN_BANNED = "🚫 Молхои манъшуда"
 BTN_CONTACTS = "📞 Контакты"
 BTN_REGISTER = "📝 Регистрация"
+# ТУГМАИ НАВ:
+BTN_ABOUT_US = "ℹ️ Информация о нас"
 
 MAIN_MENU = [
     [BTN_REGISTER],
     [BTN_DELIVERY, BTN_ADDRESS],
     [BTN_TRACK, BTN_DUSHANBE],
     [BTN_PRICE_LIST, BTN_BANNED],
-    [BTN_CONTACTS]
+    # ТУГМАИ НАВ ИЛОВА ШУД
+    [BTN_CONTACTS, BTN_ABOUT_US] 
 ]
+# ... (Коди send_main_menu бетағйир мемонад)
 
-#def send_main_menu(chat_id, text="Менюи асосӣ. Лутфан, интихоб кунед:"):
-#    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-#    for row in MAIN_MENU:
-#        markup.add(*[types.KeyboardButton(text) for text in row])
-#    bot.send_message(chat_id, text, reply_markup=markup)
+def send_main_menu(chat_id, text=""): # <--- Матн барои менюи асосӣ нест карда шуд
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    for row in MAIN_MENU:
+        # Истифодаи button_text барои пешгирии муноқишаи номҳо
+        markup.add(*[types.KeyboardButton(button_text) for button_text in row])
+    bot.send_message(chat_id, text, reply_markup=markup)
 
 # ================== START ==================
 @bot.message_handler(commands=["start", "help"])
@@ -111,7 +121,16 @@ def start_handler(message):
 def main_handler(message):
     chat_id = message.chat.id
     text = message.text
+# ... (дар дохили def main_handler(message):)
 
+    elif text == BTN_CONTACTS:
+        show_contacts(chat_id)
+
+    # ОБРАБОТЧИК ТУГМАИ НАВ
+    elif text == BTN_ABOUT_US:
+        show_about_us(chat_id)
+        
+    else:
     if text == BTN_REGISTER:
         msg = bot.send_message(chat_id, "📝 **Барои бақайдгирӣ** лутфан, номи худро ворид кунед:")
         bot.register_next_step_handler(msg, register_step_name)
@@ -126,44 +145,57 @@ def main_handler(message):
 
     elif text == BTN_PRICE_LIST:
         bot.send_message(chat_id,
-                         "💰 *Нархномаи хизматрасониҳо:*\n"
-                         "• Аз **200кг то 1000кг** — *$1.8$* барои 1 кг\n"
-                         "• Аз **0.1кг то 200кг** — *$3.0$* барои 1 кг\n"
-                         "Барои тафсилоти бештар бо оператор тамос гиред.",
-                         parse_mode="Markdown")
+                          "💰 *Нархномаи хизматрасониҳо:*\n"
+                          "• Аз **200кг то 1000кг** — *$1.8$* барои 1 кг\n"
+                          "• Аз **0.1кг то 200кг** — *$3.0$* барои 1 кг\n"
+                          "Барои тафсилоти бештар бо оператор тамос гиред.",
+                          parse_mode="Markdown")
 
     elif text == BTN_TRACK:
-        msg = bot.send_message(chat_id, "🔍 **Барои санҷиши ҳолати бор**.\nЛутфан, *трек-коди* худро ворид кунед:")
-        bot.register_next_step_handler(msg, track_step)
+        # ЛОГИКАИ НАВ: ФИРИСТОДАНИ ССЫЛКА БА ҶОИ ҶУСТУҶӮ
+        track_link = "https://t.me/TAJEXPRESSTRACCOD" 
+        
+        markup = types.InlineKeyboardMarkup(row_width=1)
+        markup.add(types.InlineKeyboardButton("🔍 Барои тафтиши треккод ворид шавед", url=track_link))
+        
+        track_text = (
+            "🔍 Барои тафтиши трек-коди худ, лутфан ба канали мо ворид шавед.\n\n"
+            "Ба тугмаи зерин пахш кунед:"
+        )
 
+        bot.send_message(chat_id, track_text, reply_markup=markup, parse_mode="Markdown")
+        
     elif text == BTN_DUSHANBE:
         bot.send_message(chat_id, 
-                         "🏢 *Адреси мо дар Душанбе:*\n"
-                         "🇹🇯 **ш. Душанбе, 103 мкр, бинои 34**\n"
-                         "☎️ **Тел:** `+992 985 171 732` (Барои тамос бо мо) \n"
-                         "⏰ **Вақти корӣ:** 9:00 - 18:00 (Душанбе)",
-                         parse_mode="Markdown")
+                          "🏢 *Адреси мо дар Душанбе:*\n"
+                          "🇹🇯 **ш. Душанбе, 103 мкр, бинои 34**\n"
+                          "☎️ **Тел:** `+992 985 171 732` (Барои тамос бо мо) \n"
+                          "⏰ **Вақти корӣ:** 9:00 - 18:00 (Душанбе)",
+                          parse_mode="Markdown")
 
     elif text == BTN_BANNED:
         bot.send_message(chat_id,
-                         "⚠️ *Рӯйхати маҳсулотҳои манъшуда барои интиқол:*\n"
-                         "---"
-                         "🔥 1. **Маводҳои тарканда** (аз қабили пиротехника)\n"
-                         "🔋 2. **Батареяҳо, аккумуляторҳо, магнитҳо ва повербанкҳо** (дар шакли алоҳида)\n"
-                         "🥗 3. **Хӯрокворӣ, тухмӣ ва шинонандаҳо**\n"
-                         "🔫 4. **Ҳарбу зарфҳо, кастет ва кордҳо** (ғайриқонунӣ)\n"
-                         "⛽ 5. **Маводи сӯзишворӣ, равған ва косметикаи моеъ**\n"
-                         "💎 6. **Нуқра, тилло ва маҳсулоти қиматбаҳо**\n"
-                         "💧 7. **Моеъҳо, аэрозолҳо ва кимиёвӣ** (дар ҳаҷми калон)\n"
-                         "🔞 8. **Ҳама намуд маҳсулотҳои 18+** (маводҳои порнографӣ, бозичаҳои ҷинсӣ ва ғайра)\n\n"
-                         "_Лутфан, пеш аз фиристодан, ин рӯйхатро бодиққат хонед._",
-                         parse_mode="Markdown")
+                          "⚠️ *Рӯйхати маҳсулотҳои манъшуда барои интиқол:*\n"
+                          "---"
+                          "🔥 1. **Маводҳои тарканда** (аз қабили пиротехника)\n"
+                          "🔋 2. **Батареяҳо, аккумуляторҳо, магнитҳо ва повербанкҳо** (дар шакли алоҳида)\n"
+                          "🥗 3. **Хӯрокворӣ, тухмӣ ва шинонандаҳо**\n"
+                          "🔫 4. **Ҳарбу зарфҳо, кастет ва кордҳо** (ғайриқонунӣ)\n"
+                          "⛽ 5. **Маводи сӯзишворӣ, равған ва косметикаи моеъ**\n"
+                          "💎 6. **Нуқра, тилло ва маҳсулоти қиматбаҳо**\n"
+                          "💧 7. **Моеъҳо, аэрозолҳо ва кимиёвӣ** (дар ҳаҷми калон)\n"
+                          "🔞 8. **Ҳама намуд маҳсулотҳои 18+** (маводҳои порнографӣ, бозичаҳои ҷинсӣ ва ғайра)\n\n"
+                          "_Лутфан, пеш аз фиристодан, ин рӯйхатро бодиққат хонед._",
+                          parse_mode="Markdown")
 
     elif text == BTN_CONTACTS:
         show_contacts(chat_id)
 
     else:
-        send_main_menu(chat_id, "Ин фармон шинохта нашуд. Лутфан, тугмаи менюро истифода баред.")
+        # Паёми хатогӣ бо менюи нав
+        bot.send_message(chat_id, "Ин фармон шинохта нашуд. Лутфан, тугмаи менюро истифода баред.")
+        send_main_menu(chat_id)
+
 
 # ================== Регистрация ==================
 def get_users_sheet():
@@ -277,40 +309,14 @@ def address_step_phone(message):
     bot.send_message(chat_id, full_address, parse_mode="Markdown")
     send_main_menu(chat_id)
 
-# ================== Трек-код ==================
+# ================== Трек-код (Нормализатсия барои кэш) ==================
 def normalize_track(code: str) -> str:
     return re.sub(r"[^A-Z0-9]", "", str(code).upper())
 
-def track_step(message):
-    chat_id = message.chat.id
-    code = normalize_track(message.text)
-    
-    row = track_cache.get(code)
-    
-    if row:
-        # Танҳо трек ва статус
-        info_text = (
-            f"🔍 **Маълумот оид ба бор:**\n"
-            f"---"
-            f"🔢 **Трек-код:** `{row.get('Track','-')}`\n"
-            f"📦 **Ҳолати бор:** *{row.get('Status','-')}*\n"
-            f"---"
-            f"_Барои тафсилоти бештар, ба оператор муроҷиат кунед._"
-        )
-    else:
-        info_text = (
-            "❌ **Трек-код ёфт нашуд.**\n\n"
-            "Лутфан, тафтиш кунед, ки трек-код дуруст аст ё бо оператори мо тамос гиред."
-        )
-        
-    bot.send_message(chat_id, info_text, parse_mode="Markdown")
-    send_main_menu(chat_id)
-
 # ================== Кэш треков ==================
-
 # Ин номҳо бояд 100% бо сарлавҳаҳои сатри аввали Sheets мувофиқат кунанд!
-# АГАР НОМИ СУТУНИ ТРЕК ДИГАР БОШАД, ИН ҶО ТАҒЙИР ДИҲЕД.
-TRACK_KEY_NAME = 'TrackCod' 
+# Барои ин версия, ин бахш фаъол аст, аммо функсияи track_step нест.
+TRACK_KEY_NAME = 'Track' 
 
 def load_cache():
     global track_cache
@@ -322,6 +328,7 @@ def load_cache():
         # gspread.get_all_records() использует первую строку как заголовки.
         records = TRACKS_SHEET.get_all_records()
         new_track_cache = {}
+        
         for r in records:
             if TRACK_KEY_NAME in r and r[TRACK_KEY_NAME]:
                 key = normalize_track(r[TRACK_KEY_NAME])
@@ -369,12 +376,11 @@ def show_contacts(chat_id):
     markup.add(types.InlineKeyboardButton("📱 Менеҷер: +992 933 055 707", url="https://t.me/zubaidullo_tjk"))
     markup.add(types.InlineKeyboardButton("📱 Менеҷер: +992 007 282 626", url="https://t.me/Fayoz_7707"))
     
-    markup.add(types.InlineKeyboardButton("📢 Канали расмии Telegram", url="https://t.me/TAJEXPRESSCARGO"))
-    
     bot.send_message(chat_id, text, reply_markup=markup, parse_mode="Markdown")
 
 # ================== Запуск бота ==================
 if __name__ == "__main__":
     print("Бот запущен...")
-    load_cache()
+    # Барои бор кардани кэш дар аввал, пеш аз оғози polling
+    load_cache() 
     bot.infinity_polling()
