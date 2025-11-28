@@ -118,8 +118,8 @@ def main_handler(message):
                               parse_mode="Markdown")
 
     elif text == BTN_TRACK:
-        # ⚠️ Ин номи каналро бо номи дурусти канали худ иваз кунед, ки дар акси экран хато буд
-        track_link = "https://t.me/TAJEXPRETACCOD_FIXME" 
+        # ⚠️ Агар канали шумо хатогӣ диҳад, ин номро бо номи дурусти канал иваз кунед!
+        track_link = "https://t.me/TAJEXPRESS_TRACKING_CHANNEL" 
         markup = types.InlineKeyboardMarkup(row_width=1)
         markup.add(types.InlineKeyboardButton("🔍 Барои тафтиши треккод ворид шавед", url=track_link))
         track_text = (
@@ -225,7 +225,8 @@ def address_step_phone(message):
     chat_id = message.chat.id
     phone = message.text.strip()
     
-    if chat_id not in user_data:
+    # Санҷиш барои мавҷудияти маълумот
+    if chat_id not in user_data or 'name' not in user_data[chat_id]:
         bot.send_message(chat_id, "❌ **Хатогӣ!** Лутфан, аз менюи асосӣ дубора оғоз кунед.")
         send_main_menu(chat_id)
         return
@@ -292,4 +293,8 @@ def show_about_us(chat_id):
 # ================== Запуск бота ==================
 if __name__ == "__main__":
     print("Бот запущен...")
-    bot.infinity_polling()
+    # Истифодаи try/except барои кӯмак дар дарёфти мушкилоти пайвастшавӣ/хатогиҳо
+    try:
+        bot.infinity_polling()
+    except Exception as e:
+        print(f"❌ Хатогии глобалӣ ҳангоми кор: {e}")
