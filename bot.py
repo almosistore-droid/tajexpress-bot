@@ -174,7 +174,7 @@ def main_handler(message):
         choose_price_list_type(chat_id) 
 
     elif text == BTN_TRACK: 
-        track_link = "https://t.me/TAJEXPRESSCARGO" 
+        track_link = "https://t.me/TAJEXPRESSTRACCOD" 
         markup = types.InlineKeyboardMarkup(row_width=1)
         
         markup.add(types.InlineKeyboardButton("📢 Ба канали TAJEXPRESSCARGO ворид шавед", url=track_link))
