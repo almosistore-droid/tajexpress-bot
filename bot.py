@@ -112,33 +112,28 @@ def choose_price_list_type(chat_id):
 # 🛠️ Обработчик барои фиристодани нархнома (АВИА/НАЗЕМНЫЙ)
 @bot.callback_query_handler(func=lambda call: call.data.startswith('price_list_'))
 def send_price_list(call):
-    """Матн ва аксҳои нархномаро мувофиқи интихоби корбар мефиристад."""
+    """Танҳо матни нархномаро мувофиқи интихоби корбар мефиристад (аксҳо нест карда шуданд)."""
     chat_id = call.message.chat.id
     delivery_type = "АВИА" if call.data == "price_list_avia" else "НАЗЕМНЫЙ"
     
     try:
-        bot.edit_message_reply_markup(chat_id, call.message.message_id, reply_markup=None) # Нест кардани тугмаҳо
+        # Нест кардани тугмаҳои қаблӣ
+        bot.edit_message_reply_markup(chat_id, call.message.message_id, reply_markup=None) 
     except ApiTelegramException:
         pass
 
-    # ==================== ID ва Матн барои АВИА ====================
+    # ==================== Матн барои АВИА ====================
     if delivery_type == "АВИА":
-        # ⚠️ ID-и акси АВИА-ро ин ҷо ГУЗОРЕД
-        PHOTO_ID_1 = "ID_AXSI_AVIA_1_RO_INJO_GUZORED" 
-        
         caption_text = (
             "💰 *Нархномаи хизматрасониҳо - АВИА:*\n"
             "---"
             "• **Интиқоли ҳавоӣ:** Аз 3-7 рӯз\n"
-            "• **Нарх:** Аз **$8** барои 1 кг (Вобаста ба вазн)\n"
+            "• **Нарх:** Аз **$10** барои 1 кг (Вобаста ба вазн)\n"
             "• **Тавсия:** Барои борҳои сабук ва зурурӣ."
         )
 
-    # ==================== ID ва Матн барои НАЗЕМНЫЙ ====================
+    # ==================== Матн барои НАЗЕМНЫЙ ====================
     else: # НАЗЕМНЫЙ
-        # ⚠️ ID-и акси НАЗЕМНЫЙ-ро ин ҷо ГУЗОРЕД
-        PHOTO_ID_1 = "ID_AXSI_GROUND_1_RO_INJO_GUZORED"
-        
         caption_text = (
             "💰 *Нархномаи хизматрасониҳо - Интиқоли заминӣ:*\n"
             "---"
@@ -147,16 +142,12 @@ def send_price_list(call):
             "Барои тафсилоти бештар бо оператор тамос гиред."
         )
 
-    # ==================== Фиристодани як Акс ====================
+    # ==================== Танҳо фиристодани Матн ====================
     try:
-        # 🟢 send_photo барои фиристодани як акс истифода мешавад
-        bot.send_photo(chat_id, PHOTO_ID_1, caption=caption_text, parse_mode="Markdown")
+        # 🟢 Ҳоло танҳо матн фиристода мешавад
+        bot.send_message(chat_id, caption_text, parse_mode="Markdown")
     except Exception as e:
-        # Агар фиристодан хатогӣ диҳад (сабаби эҳтимолӣ ID-и нодуруст аст)
-        print(f"❌ Хатогӣ ҳангоми фиристодани акс: {e}")
-        # Танҳо матнро мефиристем
-        bot.send_message(chat_id, f"❌ Хатогӣ ҳангоми фиристодани аксҳо.\n\n{caption_text}", parse_mode="Markdown")
-
+        print(f"❌ Хатогӣ ҳангоми фиристодани матн: {e}")
 # ================== Основной обработчик ==================
 @bot.message_handler(func=lambda m: True)
 def main_handler(message):
