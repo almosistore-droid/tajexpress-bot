@@ -130,7 +130,7 @@ def send_price_list(call):
             "💰 *Нархномаи хизматрасониҳо - АВИА:*\n"
             "---"
             "• **Интиқоли ҳавоӣ:** Аз 3-7 рӯз\n"
-            "• **Нарх:** Аз **$10** барои 1 кг (Вобаста ба вазн)\n"
+            "• **Нарх:** Аз **$8** барои 1 кг (Вобаста ба вазн)\n"
             "• **Тавсия:** Барои борҳои сабук ва зурурӣ."
         )
 
@@ -143,7 +143,7 @@ def send_price_list(call):
             "💰 *Нархномаи хизматрасониҳо - Интиқоли заминӣ:*\n"
             "---"
             "• Аз **200кг то 1000кг** — *$1.8$* барои 1 кг\n"
-            "• Аз **0.1кг то 200кг** — *$3.0$* барои 1 кг\n"
+            "• Аз **0.1кг то 200кг** — *$2.5$* барои 1 кг\n"
             "Барои тафсилоти бештар бо оператор тамос гиред."
         )
 
@@ -359,7 +359,6 @@ def show_contacts(chat_id):
     text = "📞 *Барои тамос бо TAJEXPRESS, яке аз рақамҳои зеринро интихоб кунед:*\n\n"
     markup = types.InlineKeyboardMarkup(row_width=1)
     
-    markup.add(types.InlineKeyboardButton("📱 Менеҷер: +992 985 171 732", url="https://t.me/zubaidullo_tjk"))
     markup.add(types.InlineKeyboardButton("📱 Менеҷер: +992 933 055 707", url="https://t.me/zubaidullo_tjk"))
     markup.add(types.InlineKeyboardButton("📱 Менеҷер: +992 007 282 626", url="https://t.me/Fayoz_7707"))
     
