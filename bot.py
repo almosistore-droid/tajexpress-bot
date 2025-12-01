@@ -177,7 +177,7 @@ def main_handler(message):
         track_link = "https://t.me/TAJEXPRESSTRACCOD" 
         markup = types.InlineKeyboardMarkup(row_width=1)
         
-        markup.add(types.InlineKeyboardButton("📢 Ба канали TAJEXPRESSCARGO ворид шавед", url=track_link))
+        markup.add(types.InlineKeyboardButton("📢 Ба канали TAJ-EXPRESS ТРЕК-КОДЫ ворид шавед", url=track_link))
         
         track_text = (
             "🔍 Барои тафтиши трек-коди худ, лутфан ба канали мо ворид шавед.\n\n"
