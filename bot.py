@@ -103,7 +103,7 @@ def choose_price_list_type(chat_id):
     
     markup.add(
         types.InlineKeyboardButton("✈️ Интиқоли ҳавоӣ (АВИА)", callback_data="price_list_avia"),
-        types.InlineKeyboardButton("🚢 Интиқоли заминӣ", callback_data="price_list_ground")
+        types.InlineKeyboardButton("🚚 Интиқоли заминӣ", callback_data="price_list_ground")
     )
     
     bot.send_message(chat_id, text, reply_markup=markup, parse_mode="Markdown")
