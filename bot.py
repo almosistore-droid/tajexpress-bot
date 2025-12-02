@@ -69,7 +69,7 @@ def choose_delivery_type(chat_id):
     
     markup.add(
         types.InlineKeyboardButton("✈️ Интиқоли ҳавоӣ (АВИА)", callback_data="address_type_avia"),
-        types.InlineKeyboardButton("🚢 Интиқоли заминӣ", callback_data="address_type_ground")
+        types.InlineKeyboardButton("🚚 Интиқоли заминӣ", callback_data="address_type_ground")
     )
     
     bot.send_message(chat_id, text, reply_markup=markup, parse_mode="Markdown")
@@ -88,7 +88,6 @@ def handle_address_type_callback(call):
     user_data[chat_id] = {"delivery_type": delivery_type}
 
     msg = bot.send_message(chat_id, 
-                           f"✅ Шумо **{delivery_type}**-ро интихоб кардед.\n\n"
                            f"🇨🇳 Лутфан, номи худро **ТАНҲО бо ҳарфҳои лотинӣ** ворид кунед (масалан, *Ahmad*):")
     
     bot.register_next_step_handler(msg, address_step_name)
@@ -128,7 +127,7 @@ def send_price_list(call):
             "💰 *Нархномаи хизматрасониҳо - АВИА:*\n"
             "---"
             "• **Интиқоли ҳавоӣ:** Аз 3-7 рӯз\n"
-            "• **Нарх:** Аз **$10** барои 1 кг (Вобаста ба вазн)\n"
+            "• **Нарх:** Аз **$10** барои то 0.1 то 1 кг \n"
             "• **Тавсия:** Барои борҳои сабук ва зурурӣ."
         )
 
@@ -139,7 +138,7 @@ def send_price_list(call):
             "---"
             "• Аз **200кг то 1000кг** — *$1.8$* барои 1 кг\n"
             "• Аз **0.1кг то 200кг** — *$2.5$* барои 1 кг\n"
-            "Барои тафсилоти бештар бо оператор тамос гиред."
+            "Барои тафсилоти бештар бо мо тамос гиред."
         )
 
     # ==================== Танҳо фиристодани Матн ====================
@@ -155,7 +154,7 @@ def main_handler(message):
     text = message.text
 
     if text == BTN_DELIVERY:
-        msg = bot.send_message(chat_id, "🚚 Лутфан, номи пурраи гирандаро ворид кунед:")
+        msg = bot.send_message(chat_id, "🚚 Лутфан, номи пурраи худро ворид кунед:")
         bot.register_next_step_handler(msg, delivery_step_name)
 
     elif text == BTN_ADDRESS:
@@ -180,7 +179,6 @@ def main_handler(message):
         bot.send_message(chat_id, 
                               "🏢 *Адреси мо дар Душанбе:*\n"
                               "🇹🇯 **ш. Душанбе, 103 мкр, бинои 34**\n"
-                              "☎️ **Тел:** `+992 985 171 732` (Барои тамос бо мо) \n"
                               "⏰ **Вақти корӣ:** 9:00 - 18:00 (Душанбе)",
                               parse_mode="Markdown")
 
@@ -256,7 +254,7 @@ def delivery_step_phone(message):
     try:
         if DELIVERY_GROUP_ID != 0:
             bot.send_message(DELIVERY_GROUP_ID, delivery_text, parse_mode="Markdown")
-        bot.send_message(chat_id, "✅ **Заявка на доставку принята!**\nВ ближайшее время с Вами свяжется наш менеджер.", parse_mode="Markdown")
+        bot.send_message(chat_id, "✅ **✅ Фармоиши Шумо қабул шуд! 🚀 Мо борро то муддати 2 рӯз бурда мерасонем. Одатан, мо борро пеш аз муҳлат бурда мерасонем!", parse_mode="Markdown")
     except ApiTelegramException as e:
         error_msg = f"❌ Ошибка отправки заявки в группу (ID: {DELIVERY_GROUP_ID}). Проверьте настройки: {e}"
         print(error_msg)
@@ -323,7 +321,7 @@ def address_step_phone(message):
         
     else: # 🚢 НАЗЕМНЫЙ (Ё Номаълум)
         # Маълумот барои НАЗЕМНЫЙ (Суроғаи пешина)
-        base_address_cn = "浙江省 金华市 义乌市 福田三小区80栋二单元305室"
+        base_address_cn = " 17590820846 浙江省 金华市 义乌市 福田三小区80栋二单元305室"
         contact_phone_cn = "17590820846"
         
     # 🛠️ ФОРМАТИ НИҲОИИ МУҚАРРАРШУДА: [Номи мизоҷ] [Телефони Чин] [Адреси Чин] [Номи мизоҷ] [Телефони корбар]
@@ -332,13 +330,12 @@ def address_step_phone(message):
     )
     # ====================================================================
     
-    full_address = (
-        f"✅ **Адреси пурра барои харидҳо дар Чин:**\n"
-        f"**Тип доставки:** *{delivery_type}*\n"
-        f"Номи мизоҷ: *{data['name']}*\n"
-        f"Телефон: *{data['phone']}*\n"
+   full_address = (
+        f"🇨🇳 **Адреси Шумо дар Чин (TAJEXPRESS):**\n"
         f"---"
-        f"📝 **Барои истифода дар сайтҳои Чин:**\n"
+        f"✈️ **Навъи интиқол:** *{delivery_type}*\n"
+        f"👤 **Номи шумо:** *{data['name']}*\n"
+        f"📞 **Телефони шумо:** *{data['phone']}*\n\n"
         f"`{china_address_format}`"
     )
     
