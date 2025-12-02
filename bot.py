@@ -63,7 +63,7 @@ def start_handler(message):
 
 # 🛠️ Функсияи интихоби навъи интиқол барои гирифтани адрес
 def choose_delivery_type(chat_id):
-    text = "✈️ *Лутфан, навъи интиқолро интихоб кунед:*"
+    text = "*Лутфан, навъи интиқолро интихоб кунед:*"
     
     markup = types.InlineKeyboardMarkup(row_width=2)
     
@@ -316,7 +316,7 @@ def address_step_phone(message):
     # ====================================================================
     if delivery_type == "АВИА":
         # Маълумот барои АВИА (Суроғаи Sam)
-        base_address_cn = "北京市通州区葛布店南里5号楼151"
+        base_address_cn = "17813714041 北京市通州区葛布店南里5号楼151"
         contact_phone_cn = "17813714041" 
         
     else: # 🚢 НАЗЕМНЫЙ (Ё Номаълум)
@@ -328,20 +328,18 @@ def address_step_phone(message):
     china_address_format = (
         f"{data['name']} {contact_phone_cn} {base_address_cn} {data['name']} {data['phone']}"
     )
-    # ====================================================================
-    
-   full_address = (
+     full_address = (  # <-- Ин сатр бояд 4 фосила дошта бошад
         f"🇨🇳 **Адреси Шумо дар Чин (TAJEXPRESS):**\n"
         f"---"
         f"✈️ **Навъи интиқол:** *{delivery_type}*\n"
         f"👤 **Номи шумо:** *{data['name']}*\n"
         f"📞 **Телефони шумо:** *{data['phone']}*\n\n"
+        f"📝 **Барои истифода дар барномаҳои Чин (Якҷоя нависед):**\n"
         f"`{china_address_format}`"
-    )
-    
-    bot.send_message(chat_id, full_address, parse_mode="Markdown")
-    send_main_menu(chat_id)
+    ) # <-- Ҳамаи ин сатрҳо бояд 4 фосила дошта бошанд
 
+    bot.send_message(chat_id, full_address, parse_mode="Markdown") # <-- Ин сатр низ 4 фосила
+    send_main_menu(chat_id) # <-- Ин сатр низ 4 фосила
 # ================== Контакты ==================
 def show_contacts(chat_id):
     text = "📞 *Барои тамос бо TAJEXPRESS, яке аз рақамҳои зеринро интихоб кунед:*\n\n"
