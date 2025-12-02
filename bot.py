@@ -328,7 +328,7 @@ def address_step_phone(message):
     china_address_format = (
         f"{data['name']} {contact_phone_cn} {base_address_cn} {data['name']} {data['phone']}"
     )
-     full_address = (  # <-- Ин сатр бояд 4 фосила дошта бошад
+full_address = (
         f"🇨🇳 **Адреси Шумо дар Чин (TAJEXPRESS):**\n"
         f"---"
         f"✈️ **Навъи интиқол:** *{delivery_type}*\n"
@@ -336,10 +336,10 @@ def address_step_phone(message):
         f"📞 **Телефони шумо:** *{data['phone']}*\n\n"
         f"📝 **Барои истифода дар барномаҳои Чин (Якҷоя нависед):**\n"
         f"`{china_address_format}`"
-    ) # <-- Ҳамаи ин сатрҳо бояд 4 фосила дошта бошанд
-
-    bot.send_message(chat_id, full_address, parse_mode="Markdown") # <-- Ин сатр низ 4 фосила
-    send_main_menu(chat_id) # <-- Ин сатр низ 4 фосила
+    )
+    
+    bot.send_message(chat_id, full_address, parse_mode="Markdown")
+    send_main_menu(chat_id)
 # ================== Контакты ==================
 def show_contacts(chat_id):
     text = "📞 *Барои тамос бо TAJEXPRESS, яке аз рақамҳои зеринро интихоб кунед:*\n\n"
