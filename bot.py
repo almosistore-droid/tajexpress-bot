@@ -328,7 +328,10 @@ def address_step_phone(message):
     china_address_format = (
         f"{data['name']} {contact_phone_cn} {base_address_cn} {data['name']} {data['phone']}"
     )
-full_address = (
+    # ====================================================================
+    
+    # 🟢 БЛОКИ full_address БО ФОСИЛАГУЗОРИИ ДУРУСТ (8 фосила)
+    full_address = (
         f"🇨🇳 **Адреси Шумо дар Чин (TAJEXPRESS):**\n"
         f"---"
         f"✈️ **Навъи интиқол:** *{delivery_type}*\n"
