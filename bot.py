@@ -311,13 +311,12 @@ def address_step_phone(message):
     delivery_type = data.get('delivery_type', 'Номаълум')
     
     
-# ====================================================================
-    # ✈️ Логикаи АВИА ва НАЗЕМНЫЙ (Ҳарду бо формати мукаммал)
     # ====================================================================
-    # 🟢 ШАРТИ ИСЛОҲШУДА (Матни пурраи delivery_type истифода мешавад)
-    if delivery_type == "Интиқоли ҳавоӣ (АВИА)": 
+    # ✈️ Логикаи АВИА ва НАЗЕМНЫЙ (Бо шарти дуруст)
+    # ====================================================================
+    if delivery_type == "Интиқоли ҳавоӣ (АВИА)": # 👈 ШАРТИ ДУРУСТ!
         # Маълумот барои АВИА (Суроғаи Sam)
-        base_address_cn = "SAM 北京市通州区葛布店南里5号楼151"
+        base_address_cn = "北京市通州区葛布店南里5号楼151"
         contact_phone_cn = "17813714041" 
         
     else: # 🚢 Интиқоли заминӣ (Ё Номаълум)
@@ -329,26 +328,22 @@ def address_step_phone(message):
     china_address_format = (
         f"{base_address_cn}"
     )
+    # ====================================================================
+    
+    # 🟢 БЛОКИ full_address БО ИСЛОҲИ ФОСИЛАҲО
+    full_address = (
+        f"""🇨🇳 **Адреси Шумо дар Чин (TAJEXPRESS):**
+---
+✈️ **Навъи интиқол:** *{delivery_type}*
+👤 **Номи шумо:** *{data['name']}*
+📞 **Телефони шумо:** *{data['phone']}*
 
-# ================== Контакты ==================
-def show_contacts(chat_id):
-    text = "📞 *Барои тамос бо TAJEXPRESS, яке аз рақамҳои зеринро интихоб кунед:*\n\n"
-    markup = types.InlineKeyboardMarkup(row_width=1)
+📝 **Барои истифода дар барномаҳои Чин (Танҳо матни зеринро нусхабардорӣ кунед):**
+`{china_address_format}`"""
+    ).strip()
     
-    markup.add(types.InlineKeyboardButton("📱 Менеҷер: +992 933 055 707", url="https://t.me/zubaidullo_tjk"))
-    markup.add(types.InlineKeyboardButton("📱 Менеҷер: +992 007 282 626", url="https://t.me/Fayoz_7707"))
-    
-    bot.send_message(chat_id, text, reply_markup=markup, parse_mode="Markdown")
-
-# ================== Маълумот дар бораи мо ==================
-def show_about_us(chat_id):
-    text = "ℹ️ *Мо дар шабакаҳои иҷтимоӣ:*\n\n"
-    markup = types.InlineKeyboardMarkup(row_width=1)
-    
-    markup.add(types.InlineKeyboardButton("📢 Канали Telegram", url="https://t.me/TAJEXPRESSCARGO"))
-    markup.add(types.InlineKeyboardButton("📸 Саҳифаи Instagram", url="https://www.instagram.com/taj_express01?igsh=ZmcxdHE4eXI0aWc1")) 
-    
-    bot.send_message(chat_id, text, reply_markup=markup, parse_mode="Markdown")
+    bot.send_message(chat_id, full_address, parse_mode="Markdown")
+    send_main_menu(chat_id)
 
 # ================== Запуск бота ==================
 if __name__ == "__main__":
