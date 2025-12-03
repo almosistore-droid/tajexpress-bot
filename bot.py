@@ -287,11 +287,6 @@ def address_step_phone(message):
     chat_id = message.chat.id
     phone = message.text.strip()
     
-    if chat_id not in user_data or 'name' not in user_data[chat_id]:
-        bot.send_message(chat_id, "❌ **Хатогӣ!** Лутфан, аз менюи асосӣ дубора оғоз кунед.")
-        send_main_menu(chat_id)
-        return
-
     # 🟢 Тасдиқкунии (Validation) формати +992 ё 9 рақам
     phone_pattern = re.compile(r"^(?:\+992|8|\+7)?\s*(\d{9})$") 
     match = phone_pattern.match(phone.replace(" ", ""))
@@ -308,26 +303,32 @@ def address_step_phone(message):
     user_data[chat_id]["phone"] = f"+992{main_phone}" # 👈 Формати ниҳоиро +992 месозем
     data = user_data[chat_id]
     
+    # Ин сатр бояд бошад, то delivery_type-ро гирад
     delivery_type = data.get('delivery_type', 'Номаълум')
     
     
     # ====================================================================
-    # ✈️ Логикаи АВИА ва НАЗЕМНЫЙ (Бо шарти дуруст)
+    # ✈️ Логикаи АВИА ва НАЗЕМНЫЙ (Муайянкунии адресҳои асосӣ ва формат)
     # ====================================================================
-    if delivery_type == "Интиқоли ҳавоӣ (АВИА)": # 👈 ШАРТИ ДУРУСТ!
+    if delivery_type == "Интиқоли ҳавоӣ (АВИА)":
         # Маълумот барои АВИА (Суроғаи Sam)
         base_address_cn = "北京市通州区葛布店南里5号楼151"
         contact_phone_cn = "17813714041" 
         
-    else: # 🚢 Интиқоли заминӣ (Ё Номаълум)
+        # 🟢 ФОРМАТИ АВИА: [Телефони Чин] [Адреси Чин] [Номи мизоҷ] [Телефони корбар]
+        china_address_format = (
+            f"{contact_phone_cn} {base_address_cn} {data['name']} {data['phone']}"
+        )
+        
+    else: # 🚢 Интиқоли заминӣ (НАЗЕМНЫЙ)
         # Маълумот барои НАЗЕМНЫЙ (Суроғаи пешина)
         base_address_cn = "浙江省 金华市 义乌市 福田三小区80栋二单元305室"
         contact_phone_cn = "17590820846"
         
-    # 🛠️ ФОРМАТИ НИҲОИИ МУҚАРРАРШУДА (ТАНҲО АДРЕСИ КАРГО):
-    china_address_format = (
-        f"{base_address_cn}"
-    )
+        # 🟢 ФОРМАТИ НАЗЕМНЫЙ: [Номи мизоҷ] [Телефони Чин] [Адреси Чин] [Номи мизоҷ] [Телефони корбар]
+        china_address_format = (
+            f"{data['name']} {contact_phone_cn} {base_address_cn} {data['name']} {data['phone']}"
+        )
     # ====================================================================
     
     # 🟢 БЛОКИ full_address БО ИСЛОҲИ ФОСИЛАҲО
@@ -338,7 +339,7 @@ def address_step_phone(message):
 👤 **Номи шумо:** *{data['name']}*
 📞 **Телефони шумо:** *{data['phone']}*
 
-📝 **Барои истифода дар барномаҳои Чин (Танҳо матни зеринро нусхабардорӣ кунед):**
+📝 **Барои истифода дар барномаҳои Чин (Якҷоя нависед):**
 `{china_address_format}`"""
     ).strip()
     
