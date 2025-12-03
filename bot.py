@@ -303,7 +303,6 @@ def address_step_phone(message):
     user_data[chat_id]["phone"] = f"+992{main_phone}" # 👈 Формати ниҳоиро +992 месозем
     data = user_data[chat_id]
     
-    # Ин сатр бояд бошад, то delivery_type-ро гирад
     delivery_type = data.get('delivery_type', 'Номаълум')
     
     
@@ -315,9 +314,9 @@ def address_step_phone(message):
         base_address_cn = "北京市通州区葛布店南里5号楼151"
         contact_phone_cn = "17813714041" 
         
-        # 🟢 ФОРМАТИ АВИА: [Телефони Чин] [Адреси Чин] [Номи мизоҷ] [Телефони корбар]
+        # 🟢 ФОРМАТИ АВИА: SAM [Телефони Чин] [Адреси Чин] [Номи мизоҷ] [Телефони корбар]
         china_address_format = (
-            f"{contact_phone_cn} {base_address_cn} {data['name']} {data['phone']}"
+            f"SAM {contact_phone_cn} {base_address_cn} {data['name']} {data['phone']}"
         )
         
     else: # 🚢 Интиқоли заминӣ (НАЗЕМНЫЙ)
