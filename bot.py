@@ -349,6 +349,30 @@ def address_step_phone(message):
     bot.send_message(chat_id, full_address, parse_mode="Markdown")
     send_main_menu(chat_id)
 
+
+# ================== Контакты ==================
+def show_contacts(chat_id):
+    text = "📞 *Барои тамос бо TAJEXPRESS, яке аз рақамҳои зеринро интихоб кунед:*\n\n"
+    markup = types.InlineKeyboardMarkup(row_width=1)
+    
+    markup.add(types.InlineKeyboardButton("📱 Менеҷер: +992 985 171 732", url="https://t.me/zubaidullo_tjk"))
+    markup.add(types.InlineKeyboardButton("📱 Менеҷер: +992 933 055 707", url="https://t.me/zubaidullo_tjk"))
+    markup.add(types.InlineKeyboardButton("📱 Менеҷер: +992 007 282 626", url="https://t.me/Fayoz_7707"))
+    
+    bot.send_message(chat_id, text, reply_markup=markup, parse_mode="Markdown")
+
+# ================== Маълумот дар бораи мо ==================
+def show_about_us(chat_id):
+    text = "ℹ️ *Мо дар шабакаҳои иҷтимоӣ:*\n\n"
+    markup = types.InlineKeyboardMarkup(row_width=1)
+    
+    markup.add(types.InlineKeyboardButton("📢 Канали Telegram", url="https://t.me/TAJEXPRESSCARGO"))
+    markup.add(types.InlineKeyboardButton("📸 Саҳифаи Instagram", url="https://www.instagram.com/taj_express01?igsh=ZmcxdHE4eXI0aWc1")) 
+    
+    bot.send_message(chat_id, text, reply_markup=markup, parse_mode="Markdown")
+
+
+
 # ================== Запуск бота ==================
 if __name__ == "__main__":
     print("Бот запущен...")
