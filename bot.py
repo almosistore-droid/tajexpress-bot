@@ -349,14 +349,11 @@ def address_step_phone(message):
     bot.send_message(chat_id, full_address, parse_mode="Markdown")
     send_main_menu(chat_id)
 
-
-# ================== Контакты ==================
 # ================== Контакты ==================
 def show_contacts(chat_id):
     text = "📞 *Барои тамос бо TAJEXPRESS, яке аз рақамҳои зеринро интихоб кунед:*\n\n"
     markup = types.InlineKeyboardMarkup(row_width=1)
-    
-    markup.add(types.InlineKeyboardButton("📱 Менеҷер: +992 985 171 732", url="https://t.me/zubaidullo_tjk"))
+
     markup.add(types.InlineKeyboardButton("📱 Менеҷер: +992 933 055 707", url="https://t.me/zubaidullo_tjk"))
     markup.add(types.InlineKeyboardButton("📱 Менеҷер: +992 007 282 626", url="https://t.me/Fayoz_7707"))
     
