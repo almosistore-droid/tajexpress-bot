@@ -350,27 +350,36 @@ def address_step_phone(message):
     send_main_menu(chat_id)
 
 
-# ================== Контакты ==================
+# ================== Контакты (УЛУЧШЕННЫЙ ДИЗАЙН) ==================
 def show_contacts(chat_id):
+    # Улучшенный текст с акцентом на прямой контакт
     text = "📞 *Барои тамос бо TAJEXPRESS, яке аз рақамҳои зеринро интихоб кунед:*\n\n"
+    
     markup = types.InlineKeyboardMarkup(row_width=1)
     
-    markup.add(types.InlineKeyboardButton("📱 Менеҷер: +992 985 171 732", url="https://t.me/zubaidullo_tjk"))
-    markup.add(types.InlineKeyboardButton("📱 Менеҷер: +992 933 055 707", url="https://t.me/zubaidullo_tjk"))
-    markup.add(types.InlineKeyboardButton("📱 Менеҷер: +992 007 282 626", url="https://t.me/Fayoz_7707"))
+    # Кнопки с яркими эмодзи для каждого менеджера
+    markup.add(types.InlineKeyboardButton("💬 Менеҷер 2: +992 933 055 707 (Telegram)", url="https://t.me/zubaidullo_tjk"))
+    markup.add(types.InlineKeyboardButton("💬 Менеҷер 3: +992 007 282 626 (Telegram)", url="https://t.me/Fayoz_7707"))
+    
+    # Добавление кнопки для звонка, если это важно
+    markup.add(types.InlineKeyboardButton("☎️ Занг задан ба офис", url="tel:+992985171732")) 
     
     bot.send_message(chat_id, text, reply_markup=markup, parse_mode="Markdown")
-
-# ================== Маълумот дар бораи мо ==================
+# ================== Маълумот дар бораи мо (УЛУЧШЕННЫЙ ДИЗАЙН) ==================
 def show_about_us(chat_id):
-    text = "ℹ️ *Мо дар шабакаҳои иҷтимоӣ:*\n\n"
+    # Улучшенный текст с призывом к действию
+    text = "🌐 *Барои пайгирии ахбор ва пешниҳодҳои махсус, ба шабакаҳои иҷтимоии мо обуна шавед:*\n\n"
+    
     markup = types.InlineKeyboardMarkup(row_width=1)
     
-    markup.add(types.InlineKeyboardButton("📢 Канали Telegram", url="https://t.me/TAJEXPRESSCARGO"))
-    markup.add(types.InlineKeyboardButton("📸 Саҳифаи Instagram", url="https://www.instagram.com/taj_express01?igsh=ZmcxdHE4eXI0aWc1")) 
+    # Кнопки с эмодзи платформ
+    markup.add(types.InlineKeyboardButton("📢 Канали расмии Telegram", url="https://t.me/TAJEXPRESSCARGO"))
+    markup.add(types.InlineKeyboardButton("📸 Саҳифаи Instagram", url="https://www.instagram.com/taj_express01?igsh=ZmcxdHE4eXI0aWc1"))
+    
+    # Вы можете добавить другие сети, если они есть
+    # markup.add(types.InlineKeyboardButton("▶️ Канали YouTube", url="[URL_YOUTUBE]"))
     
     bot.send_message(chat_id, text, reply_markup=markup, parse_mode="Markdown")
-
 
 
 # ================== Запуск бота ==================
