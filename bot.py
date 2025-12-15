@@ -297,7 +297,7 @@ def address_step_phone(message):
 
     if not match:
         msg = bot.send_message(chat_id, 
-                               "❌ **Хатогӣ!** Лутфан, рақамро бо формати **9 рақам** ворид кунед (мисол: `985171732`).")
+                               "❌ **Хатогӣ!** Лутфан, рақамро бо формати **9 рақам** ворид кунед (мисол: `987654321`).")
         bot.register_next_step_handler(msg, address_step_phone)
         return
         
@@ -350,18 +350,18 @@ def address_step_phone(message):
     send_main_menu(chat_id)
 
 
-# ================== Контакты (УЛУЧШЕННЫЙ ДИЗАЙН) ==================
+# ================== Контакты ==================
 def show_contacts(chat_id):
     # Улучшенный текст с акцентом на прямой контакт
     text = "📞 *Барои тамос бо TAJEXPRESS, яке аз рақамҳои зеринро интихоб кунед:*\n\n"
     
     markup = types.InlineKeyboardMarkup(row_width=1)
     
-    # Кнопки с яркими эмодзи для каждого менеджера
+    # Кнопкаҳо бо эмодзиҳои алоқаманд
     markup.add(types.InlineKeyboardButton("💬 Менеҷер 2: +992 933 055 707 (Telegram)", url="https://t.me/zubaidullo_tjk"))
     markup.add(types.InlineKeyboardButton("💬 Менеҷер 3: +992 007 282 626 (Telegram)", url="https://t.me/Fayoz_7707"))
     
-    # Добавление кнопки для звонка, если это важно
+    # Илова кардани тугма барои занги мустақим
     markup.add(types.InlineKeyboardButton("☎️ Занг задан ба офис", url="tel:+992985171732")) 
     
     bot.send_message(chat_id, text, reply_markup=markup, parse_mode="Markdown")
