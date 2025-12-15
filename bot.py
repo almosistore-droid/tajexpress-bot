@@ -351,18 +351,14 @@ def address_step_phone(message):
 
 
 # ================== Контакты ==================
+# ================== Контакты ==================
 def show_contacts(chat_id):
-    # Улучшенный текст с акцентом на прямой контакт
     text = "📞 *Барои тамос бо TAJEXPRESS, яке аз рақамҳои зеринро интихоб кунед:*\n\n"
-    
     markup = types.InlineKeyboardMarkup(row_width=1)
     
-    # Кнопкаҳо бо эмодзиҳои алоқаманд
-    markup.add(types.InlineKeyboardButton("💬 Менеҷер 2: +992 933 055 707 (Telegram)", url="https://t.me/zubaidullo_tjk"))
-    markup.add(types.InlineKeyboardButton("💬 Менеҷер 3: +992 007 282 626 (Telegram)", url="https://t.me/Fayoz_7707"))
-    
-    # Илова кардани тугма барои занги мустақим
-    markup.add(types.InlineKeyboardButton("☎️ Занг задан ба офис", url="tel:+992985171732")) 
+    markup.add(types.InlineKeyboardButton("📱 Менеҷер: +992 985 171 732", url="https://t.me/zubaidullo_tjk"))
+    markup.add(types.InlineKeyboardButton("📱 Менеҷер: +992 933 055 707", url="https://t.me/zubaidullo_tjk"))
+    markup.add(types.InlineKeyboardButton("📱 Менеҷер: +992 007 282 626", url="https://t.me/Fayoz_7707"))
     
     bot.send_message(chat_id, text, reply_markup=markup, parse_mode="Markdown")
 # ================== Маълумот дар бораи мо (УЛУЧШЕННЫЙ ДИЗАЙН) ==================
