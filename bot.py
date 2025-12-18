@@ -194,7 +194,18 @@ def main_handler(message):
     elif text == BTN_DUSHANBE:
         bot.send_message(chat_id, "🏢 *Адрес Душанбе:* 103 мкр, бинои 34. ⏰ 9:00 - 18:00", parse_mode="Markdown")
     elif text == BTN_BANNED:
-        bot.send_message(chat_id, "⚠️ *Молҳои манъшуда:* Батареяҳо, моеъҳо, силоҳ, маҳсулоти 18+.", parse_mode="Markdown")
+        bot.send_message(chat_id,
+
+                              "⚠️ *Рӯйхати маҳсулотҳои манъшуда барои интиқол:*\n"
+                              "🔥 1. **Маводҳои тарканда** (аз қабили пиротехника)\n"
+                              "🔋 2. **Батареяҳо, аккумуляторҳо, магнитҳо ва повербанкҳо** (дар шакли алоҳида)\n"
+                              "🥗 3. **Хӯрокворӣ, тухмӣ ва шинонандаҳо**\n"
+                              "🔫 4. **Ҳарбу зарфҳо, кастет ва кордҳо** (ғайриқонунӣ)\n"
+                              "⛽ 5. **Маводи сӯзишворӣ, равған ва косметикаи моеъ**\n"
+                              "💎 6. **Нуқра, тилло ва маҳсулоти қиматбаҳо**\n"
+                              "💧 7. **Моеъҳо, аэрозолҳо ва кимиёвӣ** (дар ҳаҷми калон)\n"
+                              "🔞 8. **Ҳама намуд маҳсулотҳои 18+** (маводҳои порнографӣ, бозичаҳои ҷинсӣ ва ғайра)\n\n"
+                              "_Лутфан, пеш аз фиристодан, ин рӯйхатро бодиққат хонед._", parse_mode="Markdown")
     elif text == BTN_CONTACTS:
         show_contacts(chat_id)
     elif text == BTN_ABOUT_US:
@@ -280,8 +291,8 @@ def address_step_phone(message):
 def show_contacts(chat_id):
     text = "📞 *Барои тамос:* "
     markup = types.InlineKeyboardMarkup(row_width=1)
-    markup.add(types.InlineKeyboardButton("📱 Менеҷер 1", url="https://t.me/zubaidullo_tjk"))
-    markup.add(types.InlineKeyboardButton("📱 Менеҷер 2", url="https://t.me/Fayoz_7707"))
+    markup.add(types.InlineKeyboardButton("📱 Менеҷер: +992 933 055 707", url="https://t.me/zubaidullo_tjk"))
+    markup.add(types.InlineKeyboardButton("📱 Менеҷер: +992 007 282 626", url="https://t.me/Fayoz_7707"))
     bot.send_message(chat_id, text, reply_markup=markup, parse_mode="Markdown")
 
 def show_about_us(chat_id):
