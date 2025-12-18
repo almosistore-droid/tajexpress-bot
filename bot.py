@@ -61,7 +61,7 @@ def send_subscription_invite(chat_id):
     markup.add(types.InlineKeyboardButton("✅ Тафтиш кардан", callback_data="check_sub"))
     
     text = (
-        f"🛑 *Ист! Барои истифодабарии бот шумо бояд аввал ба канали мо обуна шавед:*\n\n"
+        f"🛑 *Барои истифодабарии бот шумо бояд аввал ба канали мо обуна шавед:*\n\n"
         f"{CHANNEL_USERNAME}\n\n"
         "Пас аз обуна шудан, тугмаи **'✅ Тафтиш кардан'**-ро пахш кунед."
     )
