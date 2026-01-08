@@ -212,8 +212,6 @@ def main_handler(message):
         show_contacts(chat_id)
     elif text == BTN_ABOUT_US:
         show_about_us(chat_id)
-    elif text == BTN_ADDRESS:
-        choose_delivery_type(chat_id)
     elif text == BTN_LESSON:
         markup = types.InlineKeyboardMarkup()
         markup.add(types.InlineKeyboardButton("📽 Тамошои дарсҳо", url="https://t.me/Tajexpresslesson"))
