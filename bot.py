@@ -212,18 +212,15 @@ def main_handler(message):
         show_contacts(chat_id)
     elif text == BTN_ABOUT_US:
         show_about_us(chat_id)
+
+    elif text == BTN_LESSON:
+        markup = types.InlineKeyboardMarkup()
+        markup.add(types.InlineKeyboardButton("📽 Тамошои дарсҳо", url="https://t.me/Tajexpresslesson"))
+        bot.send_message(chat_id, "🎓 *Омӯзиши ройгон бо TAJEXPRESS*\n\nМо дар канали @Tajexpresslesson дарсҳои ройгонро барои шумо омода кардем.", reply_markup=markup, parse_mode="Markdown")
+        bot.send_message(chat_id, improved_text, reply_markup=markup, parse_mode="Markdown")
+        
     else:
         send_main_menu(chat_id, "Лутфан, тугмаро интихоб кунед.")
-
-    elif text == BTN_LESSON:  # Ислоҳ шуд: Акнун дар дохили main_handler аст
-        lesson_link = "https://t.me/Tajexpresslesson"
-        markup = types.InlineKeyboardMarkup()
-        markup.add(types.InlineKeyboardButton("📽 Тамошои дарсҳо", url=lesson_link))
-        improved_text = (
-            "🎓 *Омӯзиши ройгон бо TAJEXPRESS*\n\n"
-            "👇 Барои тамошои дарсҳо тугмаро пахш кунед:"
-        )
-        bot.send_message(chat_id, improved_text, reply_markup=markup, parse_mode="Markdown")
     
 # ================== Логикаи қадамҳо (Steps) ==================
 
