@@ -280,19 +280,19 @@ def address_step_phone(message):
     data = user_data[chat_id]
     dtype = data.get('delivery_type', 'Заминӣ')
 
-    # Маълумоти складҳо
-    if "АВИА" in dtype:
-        c_name = f"SAM {data['name']}"
-        c_phone = "17813714041"
-        c_prov = "北京市"
-        c_city = "通州区"
-        c_addr = f"葛布店南里5号楼151 ({data['name']} {data['phone']})"
-    else:
-        c_name = f"{data['name']}"
-        c_phone = "17590820846"
-        c_prov = "浙江省"
-        c_city = "金华市 / 义乌市"
-        c_addr = f"福田三小区80栋二单元305室 ({data['name']} {data['phone']})"
+    # # Маълумоти складҳо
+    # if "АВИА" in dtype:
+    #     c_name = f"SAM {data['name']}"
+    #     c_phone = "17813714041"
+    #     c_prov = "北京市"
+    #     c_city = "通州区"
+    #     c_addr = f"葛布店南里5号楼151 ({data['name']} {data['phone']})"
+    # else:
+    #     c_name = f"{data['name']}"
+    #     c_phone = "17590820846"
+    #     c_prov = "浙江省"
+    #     c_city = "金华市 / 义乌市"
+    #     c_addr = f"福田三小区80栋二单元305室 ({data['name']} {data['phone']})"
     
     # Сатри Smart Paste барои Pinduoduo
     smart_paste = f"{c_name}，{c_phone}，{c_prov} {c_city} {c_addr}"
