@@ -297,19 +297,19 @@ def address_step_phone(message):
     # Сатри Smart Paste барои Pinduoduo
     smart_paste = f"{c_name}，{c_phone}，{c_prov} {c_city} {c_addr}"
 
-    # res = (
-    #     f"🇨🇳 **Адреси Шумо барои Pinduoduo / Taobao:**\n"
-    #     f"--- \n"
-    #     f"✈️ **Навъи интиқол:** {dtype}\n\n"
-    #     f"👤 **收货人 (Имя):**\n`{c_name}`\n\n"
-    #     f"📞 **手机号码 (Телефон):**\n`{c_phone}`\n\n"
-    #     f"📍 **所在地区 (Регион):**\n`{c_prov} {c_city}`\n\n"
-    #     f"🏠 **详细地址 (Адрес):**\n`{c_addr}`\n\n"
-    #     f"--- \n"
-    #     f"💡 **Барои зуд илова кардан (Smart Paste):**\n"
-    #     f"Матни зерро нусха (copy) кунед ва ба Pinduoduo ворид шавед, барнома худаш адресро мешиносад:\n\n"
-    #     f"`{smart_paste}`"
-    # )
+    res = (
+        f"🇨🇳 **Адреси Шумо барои Pinduoduo / Taobao:**\n"
+        f"--- \n"
+        f"✈️ **Навъи интиқол:** {dtype}\n\n"
+        f"👤 **收货人 (Имя):**\n`{c_name}`\n\n"
+        f"📞 **手机号码 (Телефон):**\n`{c_phone}`\n\n"
+        f"📍 **所在地区 (Регион):**\n`{c_prov} {c_city}`\n\n"
+        f"🏠 **详细地址 (Адрес):**\n`{c_addr}`\n\n"
+        f"--- \n"
+        f"💡 **Барои зуд илова кардан (Smart Paste):**\n"
+        f"Матни зерро нусха (copy) кунед ва ба Pinduoduo ворид шавед, барнома худаш адресро мешиносад:\n\n"
+        f"`{smart_paste}`"
+    )
 
     bot.send_message(chat_id, res, parse_mode="Markdown")
     send_main_menu(chat_id)
