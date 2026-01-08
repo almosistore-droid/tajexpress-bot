@@ -258,13 +258,6 @@ def delivery_step_phone(message):
         bot.register_next_step_handler(msg, delivery_step_phone)
 
 # Ин қисм барои тугмаи "Гирифтани адрес" муҳим аст
-def address_step_name(message):
-    chat_id = message.chat.id
-    if chat_id not in user_data: user_data[chat_id] = {}
-    user_data[chat_id]["name"] = message.text.strip()
-    msg = bot.send_message(chat_id, "📞 Акнун рақами телефони худро ворид кунед (9 рақам):")
-    bot.register_next_step_handler(msg, address_step_phone)
-
 def address_step_phone(message):
     chat_id = message.chat.id
     phone = message.text.strip()
@@ -275,7 +268,7 @@ def address_step_phone(message):
         msg = bot.send_message(chat_id, "❌ Хатогӣ! 9 рақам ворид кунед:")
         bot.register_next_step_handler(msg, address_step_phone)
         return
-
+        
     user_data[chat_id]["phone"] = f"+992{match.group(1)}"
     data = user_data[chat_id]
     dtype = data.get('delivery_type', 'Заминӣ')
@@ -307,10 +300,10 @@ def address_step_phone(message):
         f"🏠 **详细地址 (Адрес):**\n`{c_addr}`\n\n"
         f"--- \n"
         f"💡 **Барои зуд илова кардан (Smart Paste):**\n"
-        f"Матни зерро нусха (copy) кунед ва ба Pinduoduo ворид шавед, барнома худаш адресро мешиносад:\n\n"
+        f"Матни зерро нусха (copy) кунед ва ба Pinduoduo ворид шавед, барнома худаш адресро ворид месозад:\n\n"
         f"`{smart_paste}`"
     )
-
+    
     bot.send_message(chat_id, res, parse_mode="Markdown")
     send_main_menu(chat_id)
 def show_contacts(chat_id):
