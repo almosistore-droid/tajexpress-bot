@@ -34,12 +34,14 @@ BTN_TRACK = "🔍 Проверка трек-кода"
 BTN_BANNED = "🚫 Молхои манъшуда"
 BTN_CONTACTS = "📞 Контакты"
 BTN_ABOUT_US = "ℹ️ Маълумот дар бораи мо"
+BTN_LESSON = "🎓 ДАРС"
 
 MAIN_MENU = [
     [BTN_DELIVERY, BTN_ADDRESS],
     [BTN_TRACK, BTN_DUSHANBE],
     [BTN_PRICE_LIST, BTN_BANNED],
-    [BTN_CONTACTS, BTN_ABOUT_US]
+    [BTN_CONTACTS, BTN_ABOUT_US],
+    [BTN_LESSON]
 ]
 
 # ================== Функсияҳои ёрирасон ==================
@@ -148,7 +150,7 @@ def send_price_list(call):
             "💰 *Нархномаи хизматрасониҳо - АВИА:*\n"
             "• **Интиқоли ҳавоӣ:** Аз 3-7 рӯз\n"
             "• Аз **0.1кг то 1кг** — *80 сомони*\n"
-            "• Аз **1 кг то 50кг** — *70 сомони* барои 1 кг\n"
+            "• Аз **1 кг то 50кг** — *75 сомони* барои 1 кг\n"
             "• Аз **50 кг то 200кг** — *65 сомони* барои 1 кг\n"  
             "• Аз **200 кг боло ** — *60 сомони* барои 1 кг\n"
             "• **Тавсия:** Барои борҳои сабук ва зурурӣ."
@@ -212,6 +214,27 @@ def main_handler(message):
         show_about_us(chat_id)
     else:
         send_main_menu(chat_id, "Лутфан, тугмаро интихоб кунед.")
+
+    elif text == BTN_LESSON:
+    lesson_link = "https://t.me/Tajexpresslesson"
+
+    markup = types.InlineKeyboardMarkup()
+    markup.add(
+        types.InlineKeyboardButton("📽 Тамошои дарсҳо", url=lesson_link)
+    )
+
+    improved_text = (
+        "🎓 *Омӯзиши ройгон бо TAJEXPRESS*\n\n"
+        "👇 Барои тамошои дарсҳо тугмаро пахш кунед"
+    )
+
+    bot.send_message(
+        chat_id,
+        improved_text,
+        reply_markup=markup,
+        parse_mode="Markdown"
+    )
+
 
 # ================== Логикаи қадамҳо (Steps) ==================
 
