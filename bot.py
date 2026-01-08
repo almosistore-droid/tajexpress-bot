@@ -300,16 +300,12 @@ def address_step_phone(message):
     smart_paste = f"{c_name}，{c_phone}，{c_prov} {c_city} {c_addr}"
 
     res = (
-        f"🇨🇳 **Адреси Шумо барои Pinduoduo / Taobao:**\n"
-        f"--- \n"
+        f"🇨🇳 **Адреси Шумо барои Pinduoduo / Taobao / 1688:**\n"
         f"✈️ **Навъи интиқол:** {dtype}\n\n"
         f"👤 **收货人 (Имя):**\n`{c_name}`\n\n"
         f"📞 **手机号码 (Телефон):**\n`{c_phone}`\n\n"
         f"📍 **所在地区 (Регион):**\n`{c_prov} {c_city}`\n\n"
         f"🏠 **详细地址 (Адрес):**\n`{c_addr}`\n\n"
-        f"--- \n"
-        f"💡 **Барои зуд илова кардан:**\n"
-        f"Матни зерро нусха (copy) кунед ва ба Pinduoduo ворид шавед, барнома худаш адресро ворид месозад:\n\n"
         f"`{smart_paste}`"
     )
     
