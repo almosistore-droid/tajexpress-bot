@@ -294,7 +294,7 @@ def address_step_phone(message):
         c_name, c_phone, c_prov, c_city, c_addr = data['name'], "17590820846", "浙江省", "金华市 / 义乌市", f"福田三小区80栋二单元305室 ({data['name']} {clean_phone})"
     
     smart_paste = f"{c_name}，{c_phone}，{c_prov} {c_city} {c_addr}"
-    res = f"🇨🇳 **Адреси Шумо ({dtype}):**\n👤 **收货人:** `{c_name}`\n📞 **手机:** `{c_phone}`\n📍 **地区:** `{c_prov} {c_city}`\n🏠 **地址:** `{c_addr}`\n\n💡 **\n`{smart_paste}`"
+    res = f"🇨🇳 **Адреси Шумо {dtype}:**\n👤 **收货人:** `{c_name}`\n📞 **手机:** `{c_phone}`\n📍 **地区:** `{c_prov} {c_city}`\n🏠 **地址:** `{c_addr}`\n\n **\n`{smart_paste}`"
     
     bot.send_message(chat_id, res, parse_mode="Markdown")
     send_main_menu(chat_id)
