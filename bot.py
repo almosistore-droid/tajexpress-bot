@@ -24,7 +24,15 @@ bot = TeleBot(TOKEN, threaded=False)
 
 # ================== Данные пользователей и кэш ==================
 user_data = {}
+# ================== CITY DATA ==================
 
+CITY_LIST = {
+
+    "city_dushanbe": "DUSHANBE",
+    "city_bokhtar": "BOKHTAR",
+    "city_jabbor": "JABBOR RASULOV"
+
+}
 # ================== Меню ==================
 BTN_DELIVERY = "🚚 Доставка"
 BTN_ADDRESS = "🇨🇳 Гирифтани адрес ва код"
@@ -201,7 +209,20 @@ def main_handler(message):
         bot.register_next_step_handler(msg, delivery_step_name)
     
     elif text == BTN_ADDRESS:
-        choose_delivery_type(chat_id)
+
+    markup = types.InlineKeyboardMarkup(row_width=1)
+
+    markup.add(
+        types.InlineKeyboardButton("🏢 Dushanbe", callback_data="city_dushanbe"),
+        types.InlineKeyboardButton("🏢 Bokhtar", callback_data="city_bokhtar"),
+        types.InlineKeyboardButton("🏢 Jabbor Rasulov", callback_data="city_jabbor")
+    )
+
+    bot.send_message(
+        chat_id,
+        "📍 Шаҳрро интихоб кунед:",
+        reply_markup=markup
+    )
         
     elif text == BTN_PRICE_LIST:
         choose_price_list_type(chat_id)
@@ -313,6 +334,80 @@ def show_about_us(chat_id):
     markup.add(types.InlineKeyboardButton("📢 Telegram", url="https://t.me/TAJEXPRESSCARGO"))
     markup.add(types.InlineKeyboardButton("📸 Instagram", url="https://www.instagram.com/taj_express01"))
     bot.send_message(chat_id, text, reply_markup=markup, parse_mode="Markdown")
+@bot.callback_query_handler(func=lambda call: call.data.startswith("city_"))
+def city_callback(call):
+
+    chat_id = call.message.chat.id
+
+    city = CITY_LIST.get(call.data)
+
+    user_data[chat_id] = {
+
+        "city": city
+
+    }
+
+    msg = bot.send_message(
+        chat_id,
+        "👤 Номро бо ҳарфҳои лотинӣ ворид кунед:"
+    )
+
+    bot.register_next_step_handler(
+        msg,
+        city_name_step
+    )
+def city_name_step(message):
+
+    chat_id = message.chat.id
+
+    name = message.text.strip()
+
+    user_data[chat_id]["name"] = name
+
+    msg = bot.send_message(
+        chat_id,
+        "📞 Телефон (9 рақам):"
+    )
+
+    bot.register_next_step_handler(
+        msg,
+        city_phone_step
+    )
+def city_phone_step(message):
+
+    chat_id = message.chat.id
+
+    phone = re.sub(r'\D', '', message.text)[-9:]
+
+    data = user_data[chat_id]
+
+    city = data["city"]
+
+    name = data["name"]
+
+    c_name = f"{city} {name}"
+
+    c_phone = "17590820846"
+
+    c_addr = f"福田三小区80栋二单元305室 {city} {name} {phone}"
+
+    full = f"""
+🇨🇳 Адреси шумо:
+
+👤 收货人: {c_name}
+
+📞 手机: {c_phone}
+
+📍 地址:
+
+浙江省 义乌市
+
+{c_addr}
+"""
+
+    bot.send_message(chat_id, full)
+
+    send_main_menu(chat_id)
 # ================== Запуск бота ==================
 if __name__ == "__main__":
     print("Бот запущен...")
