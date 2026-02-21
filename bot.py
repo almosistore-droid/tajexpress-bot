@@ -294,39 +294,6 @@ def delivery_step_phone(message):
         msg = bot.send_message(chat_id, "❌ Хато! Рақамро дуруст нависед:")
         bot.register_next_step_handler(msg, delivery_step_phone)
 
-# Ин қисм барои тугмаи "Гирифтани адрес" муҳим аст
-def address_step_name(message):
-    chat_id = message.chat.id
-    if chat_id not in user_data: user_data[chat_id] = {}
-    user_data[chat_id]["name"] = message.text.strip()
-    msg = bot.send_message(chat_id, "📞 Акнун рақами телефони худро ворид кунед (9 рақам):")
-    bot.register_next_step_handler(msg, address_step_phone)
-
-def address_step_phone(message):
-    chat_id = message.chat.id
-    phone = message.text.strip()
-    clean_phone = re.sub(r'\D', '', phone)[-9:]
-    
-    if len(clean_phone) < 9:
-        msg = bot.send_message(chat_id, "❌ Хато! 9 рақам ворид кунед:")
-        bot.register_next_step_handler(msg, address_step_phone)
-        return
-
-    user_data[chat_id]["phone"] = clean_phone
-    data = user_data[chat_id]
-    dtype = data.get('delivery_type', 'Заминӣ')
-
-    if "АВИА" in dtype:
-        c_name, c_phone, c_prov, c_city, c_addr = f"SAM {data['name']}", "17813714041", "北京市", "通州区", f"葛布店南里5号楼151 {data['name']} {clean_phone}"
-    else:
-        c_name, c_phone, c_prov, c_city, c_addr = data['name'], "17590820846", "浙江省", "金华市 / 义乌市", f"福田三小区80栋二单元305室 {data['name']} {clean_phone}"
-    
-    smart_paste = f"{c_name}，{c_phone}，{c_prov} {c_city} {c_addr}"
-    res = f"🇨🇳 **Адреси Шумо {dtype}:**\n👤 **收货人:** `{c_name}`\n📞 **手机:** `{c_phone}`\n📍 **地区:** `{c_prov} {c_city}`\n🏠 **地址:** `{c_addr}`\n\n **\n`{smart_paste}`"
-    
-    bot.send_message(chat_id, res, parse_mode="Markdown")
-    send_main_menu(chat_id)
-
 def show_contacts(chat_id):
     text = "📞 *Барои тамос:* "
     markup = types.InlineKeyboardMarkup(row_width=1)
@@ -340,6 +307,7 @@ def show_about_us(chat_id):
     markup.add(types.InlineKeyboardButton("📢 Telegram", url="https://t.me/TAJEXPRESSCARGO"))
     markup.add(types.InlineKeyboardButton("📸 Instagram", url="https://www.instagram.com/taj_express01"))
     bot.send_message(chat_id, text, reply_markup=markup, parse_mode="Markdown")
+
 @bot.callback_query_handler(func=lambda call: call.data.startswith("city_"))
 def city_callback(call):
 
