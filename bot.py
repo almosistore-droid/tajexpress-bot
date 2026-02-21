@@ -210,12 +210,18 @@ def main_handler(message):
     
     elif text == BTN_ADDRESS:
 
-    markup = types.InlineKeyboardMarkup(row_width=1)
+        markup = types.InlineKeyboardMarkup(row_width=1)
 
-    markup.add(
-        types.InlineKeyboardButton("🏢 Dushanbe", callback_data="city_dushanbe"),
-        types.InlineKeyboardButton("🏢 Bokhtar", callback_data="city_bokhtar"),
-        types.InlineKeyboardButton("🏢 Jabbor Rasulov", callback_data="city_jabbor")
+        markup.add(
+            types.InlineKeyboardButton("🏢 Dushanbe", callback_data="city_dushanbe"),
+            types.InlineKeyboardButton("🏢 Bokhtar", callback_data="city_bokhtar"),
+            types.InlineKeyboardButton("🏢 Jabbor Rasulov", callback_data="city_jabbor")
+    )
+
+    bot.send_message(
+        chat_id,
+        "📍 Шаҳрро интихоб кунед:",
+        reply_markup=markup
     )
 
     bot.send_message(
