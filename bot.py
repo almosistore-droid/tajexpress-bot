@@ -207,7 +207,7 @@ def main_handler(message):
     if text == BTN_DELIVERY:
         msg = bot.send_message(chat_id, "🚚 Лутфан, номи пурраи худро ворид кунед:")
         bot.register_next_step_handler(msg, delivery_step_name)
-    
+
     elif text == BTN_ADDRESS:
 
         markup = types.InlineKeyboardMarkup(row_width=1)
@@ -223,13 +223,6 @@ def main_handler(message):
         "📍 Шаҳрро интихоб кунед:",
         reply_markup=markup
     )
-
-    bot.send_message(
-        chat_id,
-        "📍 Шаҳрро интихоб кунед:",
-        reply_markup=markup
-    )
-        
     elif text == BTN_PRICE_LIST:
         choose_price_list_type(chat_id)
         
