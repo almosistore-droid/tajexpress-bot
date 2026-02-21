@@ -136,22 +136,22 @@ def handle_address_type_callback(call):
     bot.register_next_step_handler(msg, address_step_name)
 
 # >>>>>>>>>>>>>>> FIX START (ЕДИНСТВЕННОЕ ИСПРАВЛЕНИЕ)
-def address_step_name(message):
-    chat_id = message.chat.id
-    name = message.text.strip()
+# def address_step_name(message):
+#     chat_id = message.chat.id
+#     name = message.text.strip()
 
-    if not re.match(r"^[A-Za-z\s]+$", name):
-        msg = bot.send_message(
-            chat_id,
-            "❌ Лутфан, номи худро **ТАНҲО бо ҳарфҳои лотинӣ** ворид кунед:",
-            parse_mode="Markdown"
-        )
-        bot.register_next_step_handler(msg, address_step_name)
-        return
+#     if not re.match(r"^[A-Za-z\s]+$", name):
+#         msg = bot.send_message(
+#             chat_id,
+#             "❌ Лутфан, номи худро **ТАНҲО бо ҳарфҳои лотинӣ** ворид кунед:",
+#             parse_mode="Markdown"
+#         )
+#         bot.register_next_step_handler(msg, address_step_name)
+#         return
 
-    user_data[chat_id]["name"] = name
-    msg = bot.send_message(chat_id, "📞 Лутфан, рақами телефонро ворид кунед (мисол: 985112233):")
-    bot.register_next_step_handler(msg, address_step_phone)
+#     user_data[chat_id]["name"] = name
+#     msg = bot.send_message(chat_id, "📞 Лутфан, рақами телефонро ворид кунед (мисол: 985112233):")
+#     bot.register_next_step_handler(msg, address_step_phone)
 # >>>>>>>>>>>>>>> FIX END
 
 def choose_price_list_type(chat_id):
