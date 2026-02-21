@@ -5,9 +5,11 @@ from telebot.apihelper import ApiTelegramException
 from dotenv import load_dotenv
 
 # ================== Настройки ==================
+
 load_dotenv()
 
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+
 if not TOKEN:
     raise RuntimeError("❌ TELEGRAM_BOT_TOKEN не задан!")
 
@@ -16,16 +18,34 @@ try:
 except ValueError:
     DELIVERY_GROUP_ID = 0
 
-# Номи канали шумо барои тафтиши обуна
-CHANNEL_USERNAME = "@TAJEXPRESSCARGO" 
+CHANNEL_USERNAME = "@TAJEXPRESSCARGO"
+
 
 # ================== Телеграм бот ==================
-bot = TeleBot(TOKEN, threaded=False)
 
-# ================== Данные пользователей и кэш ==================
+bot = TeleBot(TOKEN, threaded=True)
+
+
+# ================== Данные пользователей ==================
+
 user_data = {}
 
+
+# ================== RESET STATE ==================
+
+def reset_user_state(chat_id):
+
+    if chat_id in user_data:
+        del user_data[chat_id]
+
+    try:
+        bot.clear_step_handler_by_chat_id(chat_id)
+    except:
+        pass
+
+
 # ================== Меню ==================
+
 BTN_DELIVERY = "🚚 Доставка"
 BTN_ADDRESS = "🇨🇳 Гирифтани адрес ва код"
 BTN_DUSHANBE = "🇹🇯 Адрес Душанбе"
@@ -44,276 +64,350 @@ MAIN_MENU = [
     [BTN_LESSON]
 ]
 
-# ================== Функсияҳои ёрирасон ==================
+
+# ================== Helpers ==================
 
 def is_subscribed(user_id):
+
     try:
         status = bot.get_chat_member(CHANNEL_USERNAME, user_id).status
+
         return status in ['member', 'administrator', 'creator']
+
     except Exception as e:
-        print(f"❌ Хатогӣ дар тафтиши обуна: {e}")
+
+        print(e)
+
         return False
 
+
 def send_subscription_invite(chat_id):
+
     markup = types.InlineKeyboardMarkup()
-    url = f"https://t.me/{CHANNEL_USERNAME.replace('@', '')}"
-    markup.add(types.InlineKeyboardButton("📢 Обуна шудан ба канал", url=url))
-    markup.add(types.InlineKeyboardButton("✅ Тафтиш кардан", callback_data="check_sub"))
-    
-    text = (
-        f"🛑 *Барои истифодабарии бот шумо бояд аввал ба канали мо обуна шавед:*\n\n"
-        f"{CHANNEL_USERNAME}\n\n"
-        "Пас аз обуна шудан, тугмаи **'✅ Тафтиш кардан'**-ро пахш кунед."
+
+    markup.add(
+        types.InlineKeyboardButton(
+            "📢 Обуна шудан",
+            url=f"https://t.me/{CHANNEL_USERNAME.replace('@','')}"
+        )
     )
-    bot.send_message(chat_id, text, reply_markup=markup, parse_mode="Markdown")
 
-def send_main_menu(chat_id, text="Менюи асосӣ. Лутфан, интихоб кунед:"):
+    markup.add(
+        types.InlineKeyboardButton(
+            "✅ Тафтиш кардан",
+            callback_data="check_sub"
+        )
+    )
+
+    bot.send_message(chat_id,
+                     "Ба канал обуна шавед",
+                     reply_markup=markup,
+                     parse_mode="Markdown")
+
+
+
+def send_main_menu(chat_id,
+                   text="Менюи асосӣ. Лутфан интихоб кунед:"):
+
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    for row in MAIN_MENU:
-        markup.add(*[types.KeyboardButton(button_text) for button_text in row])
-    bot.send_message(chat_id, text, reply_markup=markup, parse_mode="Markdown")
 
-# ================== START & HANDLERS ==================
+    for row in MAIN_MENU:
+        markup.add(*row)
+
+    bot.send_message(chat_id,
+                     text,
+                     reply_markup=markup)
+
+
+# ================== START ==================
 
 @bot.message_handler(commands=["start", "help"])
 def start_handler(message):
-    chat_id = message.chat.id
-    user_id = message.from_user.id
 
-    if is_subscribed(user_id):
-        welcome_text = (
-            "🚀 *TAJEXPRESS* – каргои боваринок ва бехатар барои овардани борхои Шумо!\n\n"
-            "📦 Борҳои худро **зуд ва бехатар** фиристед\n"
-            "⏱️ Дархостҳоро осон ва зуд иҷро намоед\n"
-            "🇨🇳 *Суроғаи қулай дар Чин* барои харидҳои шумо\n\n"
-            "Менюи зерро интихоб кунед:"
-        )
-        send_main_menu(chat_id, welcome_text)
+    if is_subscribed(message.from_user.id):
+
+        send_main_menu(message.chat.id)
+
     else:
-        send_subscription_invite(chat_id)
 
-@bot.callback_query_handler(func=lambda call: call.data == "check_sub")
-def check_sub_callback(call):
-    chat_id = call.message.chat.id
-    user_id = call.from_user.id
+        send_subscription_invite(message.chat.id)
 
-    if is_subscribed(user_id):
-        bot.answer_callback_query(call.id, "✅ Ташаккур барои обуна!")
-        bot.delete_message(chat_id, call.message.message_id)
-        send_main_menu(chat_id, "🚀 Хуш омадед! Акнун шумо метавонед ботро истифода баред:")
+
+
+# ================== CALLBACK ==================
+
+@bot.callback_query_handler(func=lambda call:
+call.data == "check_sub")
+def check_sub(call):
+
+    if is_subscribed(call.from_user.id):
+
+        bot.answer_callback_query(call.id,
+                                  "✅ Обуна тасдиқ шуд")
+
+        bot.delete_message(call.message.chat.id,
+                           call.message.message_id)
+
+        send_main_menu(call.message.chat.id)
+
     else:
-        bot.answer_callback_query(call.id, "❌ Шумо ҳоло ҳам обуна нашудаед!", show_alert=True)
 
-# 🛠️ Функсияи интихоби навъи интиқол
+        bot.answer_callback_query(call.id,
+                                  "❌ Обуна нашудаед",
+                                  show_alert=True)
+
+
+
+# ================== ADDRESS TYPE ==================
+
 def choose_delivery_type(chat_id):
-    text = "*Лутфан, навъи интиқолро интихоб кунед:*"
-    markup = types.InlineKeyboardMarkup(row_width=2)
+
+    markup = types.InlineKeyboardMarkup()
+
     markup.add(
-        types.InlineKeyboardButton("✈️ Интиқоли ҳавоӣ (АВИА)", callback_data="address_type_avia"),
-        types.InlineKeyboardButton("🚚 Интиқоли заминӣ", callback_data="address_type_ground")
+
+        types.InlineKeyboardButton(
+            "✈️ Интиқоли ҳавоӣ",
+            callback_data="address_type_avia"),
+
+        types.InlineKeyboardButton(
+            "🚚 Интиқоли заминӣ",
+            callback_data="address_type_ground")
     )
-    bot.send_message(chat_id, text, reply_markup=markup, parse_mode="Markdown")
 
-@bot.callback_query_handler(func=lambda call: call.data.startswith('address_type_'))
-def handle_address_type_callback(call):
+    bot.send_message(chat_id,
+                     "Навъи интиқолро интихоб кунед:",
+                     reply_markup=markup)
+
+
+
+@bot.callback_query_handler(func=lambda call:
+call.data.startswith("address_type_"))
+def address_type_handler(call):
+
     chat_id = call.message.chat.id
+
+    reset_user_state(chat_id)
+
     try:
-        bot.edit_message_reply_markup(chat_id, call.message.message_id, reply_markup=None)
-    except ApiTelegramException:
-        pass 
+        bot.edit_message_reply_markup(chat_id,
+                                      call.message.message_id,
+                                      reply_markup=None)
+    except:
+        pass
 
-    delivery_type = "Интиқоли ҳавоӣ (АВИА)" if call.data == "address_type_avia" else "Интиқоли заминӣ"
-    user_data[chat_id] = {"delivery_type": delivery_type}
-    msg = bot.send_message(chat_id, "🇨🇳 Лутфан, номи худро **ТАНҲО бо ҳарфҳои лотинӣ** ворид кунед:")
-    bot.register_next_step_handler(msg, address_step_name)
 
-# >>>>>>>>>>>>>>> FIX START (ЕДИНСТВЕННОЕ ИСПРАВЛЕНИЕ)
+    delivery_type = "АВИА" if "avia" in call.data else "Заминӣ"
+
+    user_data[chat_id] = {
+        "delivery_type": delivery_type
+    }
+
+    msg = bot.send_message(chat_id,
+                           "Номро бо лотин ворид кунед:")
+
+    bot.register_next_step_handler(msg,
+                                   address_step_name)
+
+
+
+# ================== ADDRESS STEPS ==================
+
 def address_step_name(message):
+
     chat_id = message.chat.id
+
     name = message.text.strip()
 
     if not re.match(r"^[A-Za-z\s]+$", name):
-        msg = bot.send_message(
-            chat_id,
-            "❌ Лутфан, номи худро **ТАНҲО бо ҳарфҳои лотинӣ** ворид кунед:",
-            parse_mode="Markdown"
-        )
-        bot.register_next_step_handler(msg, address_step_name)
+
+        msg = bot.send_message(chat_id,
+                               "Фақат бо лотин:")
+
+        bot.register_next_step_handler(msg,
+                                       address_step_name)
+
         return
+
+
+    if chat_id not in user_data:
+
+        user_data[chat_id] = {}
+
 
     user_data[chat_id]["name"] = name
-    msg = bot.send_message(chat_id, "📞 Лутфан, рақами телефонро ворид кунед (мисол: 985112233):")
-    bot.register_next_step_handler(msg, address_step_phone)
-# >>>>>>>>>>>>>>> FIX END
 
-def choose_price_list_type(chat_id):
-    text = "📦 *Нархномаи кадом навъи интиқолро мехоҳед дидан?*"
-    markup = types.InlineKeyboardMarkup(row_width=2)
-    markup.add(
-        types.InlineKeyboardButton("✈️ Интиқоли ҳавоӣ (АВИА)", callback_data="price_list_avia"),
-        types.InlineKeyboardButton("🚚 Интиқоли заминӣ", callback_data="price_list_ground")
-    )
-    bot.send_message(chat_id, text, reply_markup=markup, parse_mode="Markdown")
 
-@bot.callback_query_handler(func=lambda call: call.data.startswith('price_list_'))
-def send_price_list(call):
-    chat_id = call.message.chat.id
-    delivery_type = "АВИА" if call.data == "price_list_avia" else "НАЗЕМНЫЙ"
-    try:
-        bot.edit_message_reply_markup(chat_id, call.message.message_id, reply_markup=None) 
-    except ApiTelegramException: pass
+    msg = bot.send_message(chat_id,
+                           "Телефон:")
 
-    if delivery_type == "АВИА":
-        caption_text = (
-            "💰 *Нархномаи хизматрасониҳо - АВИА:*\n"
-            "• **Муҳлати интиқол:** Аз 3-7 рӯз\n"
-            "• Аз **0.1кг то 1кг** — *8 $*\n"
-            "• Аз **1 кг то 50кг** — *8 $* барои 1 кг\n"
-            "• Аз **50 кг то 200кг** — *7 $* барои 1 кг\n"  
-            "• Аз **200 кг боло ** — *6.5 $* барои 1 кг\n"
-            "• **Тавсия:** Барои борҳои сабук ва зурурӣ."
-        )
-    else:
-        caption_text = (
-            "💰 *Нархномаи хизматрасониҳо - Интиқоли заминӣ:*\n"
-            "• **Муҳлати интиқол:** Аз 15-25 рӯз\n"
-            "• Аз **0.1кг то 0.5кг** — * 1,25 $ *\n"
-            "• Аз **0.5кг то 1кг** — *2.5 $ *\n"
-            "• Аз **50 кг то 200кг** — *2.3 $* барои 1 кг\n"
-            "• Аз **200кг боло ** — *1.9 $* барои 1 кг\n"
-            "Барои тафсилоти бештар бо мо тамос гиред."
-        )
-    bot.send_message(chat_id, caption_text, parse_mode="Markdown")
+    bot.register_next_step_handler(msg,
+                                   address_step_phone)
 
-# ================== ОСНОВНОЙ ОБРАБОТЧИК ==================
 
-@bot.message_handler(func=lambda m: True)
-def main_handler(message):
+
+def address_step_phone(message):
+
     chat_id = message.chat.id
-    if not is_subscribed(message.from_user.id):
-        send_subscription_invite(chat_id)
+
+    phone = re.sub(r'\D', '',
+                   message.text)[-9:]
+
+
+    if len(phone) < 9:
+
+        msg = bot.send_message(chat_id,
+                               "Хато:")
+
+        bot.register_next_step_handler(msg,
+                                       address_step_phone)
+
         return
+
+
+    user_data[chat_id]["phone"] = phone
+
+
+    data = user_data[chat_id]
+
+    dtype = data.get("delivery_type")
+
+
+    if "АВИА" in dtype:
+
+        c_name = f"SAM {data['name']}"
+
+        c_phone = "17813714041"
+
+        c_addr = f"北京 {data['name']} {phone}"
+
+    else:
+
+        c_name = data['name']
+
+        c_phone = "17590820846"
+
+        c_addr = f"义乌 {data['name']} {phone}"
+
+
+    bot.send_message(chat_id,
+                     f"{c_name}\n{c_phone}\n{c_addr}")
+
+    send_main_menu(chat_id)
+
+
+
+# ================== DELIVERY ==================
+
+def delivery_step_name(message):
+
+    chat_id = message.chat.id
+
+    user_data[chat_id] = {
+        "name": message.text
+    }
+
+    msg = bot.send_message(chat_id,
+                           "Адрес:")
+
+    bot.register_next_step_handler(msg,
+                                   delivery_step_address)
+
+
+
+def delivery_step_address(message):
+
+    chat_id = message.chat.id
+
+    user_data[chat_id]["address"] = message.text
+
+    msg = bot.send_message(chat_id,
+                           "Телефон:")
+
+    bot.register_next_step_handler(msg,
+                                   delivery_step_phone)
+
+
+
+def delivery_step_phone(message):
+
+    chat_id = message.chat.id
+
+    phone = message.text
+
+    user_data[chat_id]["phone"] = phone
+
+    bot.send_message(chat_id,
+                     "✅ Кабул шуд")
+
+    send_main_menu(chat_id)
+
+
+
+# ================== MAIN HANDLER ==================
+
+@bot.message_handler(func=lambda message: True)
+def main_handler(message):
+
+    chat_id = message.chat.id
+
+
+    if not is_subscribed(message.from_user.id):
+
+        send_subscription_invite(chat_id)
+
+        return
+
 
     text = message.text
 
+
+    if text in [
+
+        BTN_DELIVERY,
+        BTN_ADDRESS,
+        BTN_PRICE_LIST,
+        BTN_TRACK,
+        BTN_DUSHANBE,
+        BTN_BANNED,
+        BTN_CONTACTS,
+        BTN_ABOUT_US,
+        BTN_LESSON
+
+    ]:
+
+        reset_user_state(chat_id)
+
+
+
     if text == BTN_DELIVERY:
-        msg = bot.send_message(chat_id, "🚚 Лутфан, номи пурраи худро ворид кунед:")
-        bot.register_next_step_handler(msg, delivery_step_name)
-    
+
+        msg = bot.send_message(chat_id,
+                               "Ном:")
+
+        bot.register_next_step_handler(msg,
+                                       delivery_step_name)
+
+
     elif text == BTN_ADDRESS:
+
         choose_delivery_type(chat_id)
-        
-    elif text == BTN_PRICE_LIST:
-        choose_price_list_type(chat_id)
-        
-    elif text == BTN_TRACK:
-        markup = types.InlineKeyboardMarkup()
-        markup.add(types.InlineKeyboardButton("📢 Канали ТРЕК-КОДЫ", url="https://t.me/TAJEXPRESSTRACCOD"))
-        bot.send_message(chat_id, "🔍 Барои тафтиши код ба канал ворид шавед.", reply_markup=markup)
-        
-    elif text == BTN_DUSHANBE:
-        bot.send_message(chat_id, "🏢 *Адрес Душанбе:* 103 мкр, бинои 34. ⏰ 9:00 - 18:00", parse_mode="Markdown")
-        
-    elif text == BTN_BANNED:
-        bot.send_message(chat_id,
 
-                              "⚠️ *Рӯйхати маҳсулотҳои манъшуда барои интиқол:*\n"
-                              "🔥 1. **Маводҳои тарканда** (аз қабили пиротехника)\n"
-                              "🔋 2. **Батареяҳо, аккумуляторҳо, магнитҳо ва повербанкҳо** (дар шакли алоҳида)\n"
-                              "🥗 3. **Хӯрокворӣ, тухмӣ ва шинонандаҳо**\n"
-                              "🔫 4. **Ҳарбу зарфҳо, кастет ва кордҳо** (ғайриқонунӣ)\n"
-                              "⛽ 5. **Маводи сӯзишворӣ, равған ва косметикаи моеъ**\n"
-                              "💎 6. **Нуқра, тилло ва маҳсулоти қиматбаҳо**\n"
-                              "💧 7. **Моеъҳо, аэрозолҳо ва кимиёвӣ** (дар ҳаҷми калон)\n"
-                              "🔞 8. **Ҳама намуд маҳсулотҳои 18+** (маводҳои порнографӣ, бозичаҳои ҷинсӣ ва ғайра)\n\n"
-                              "_Лутфан, пеш аз фиристодан, ин рӯйхатро бодиққат хонед._", parse_mode="Markdown")
-        
-    elif text == BTN_LESSON:
-        markup = types.InlineKeyboardMarkup()
-        markup.add(types.InlineKeyboardButton("📽 Тамошои дарсҳо", url="https://t.me/Tajexpresslesson"))
-        bot.send_message(chat_id, "🎓 *Омӯзиши ройгон бо TAJEXPRESS*\n\nДар канали мо дарсҳои ройгон мавҷуданд:", reply_markup=markup, parse_mode="Markdown")
-        
+
     elif text == BTN_CONTACTS:
-        show_contacts(chat_id)
-        
-    elif text == BTN_ABOUT_US:
-        show_about_us(chat_id)
-    
+
+        bot.send_message(chat_id,
+                         "Контакты")
+
+
     else:
+
         send_main_menu(chat_id)
 
-# ================== ЛОГИКАИ ҚАДАМҲО (STEPS) ==================
 
-def delivery_step_name(message):
-    user_data[message.chat.id] = {"name": message.text.strip()}
-    msg = bot.send_message(message.chat.id, "📍 Адреси худро ворид кунед:")
-    bot.register_next_step_handler(msg, delivery_step_address)
 
-def delivery_step_address(message):
-    user_data[message.chat.id]["address"] = message.text.strip()
-    msg = bot.send_message(message.chat.id, "📞 Рақами телефон (9 рақам):")
-    bot.register_next_step_handler(msg, delivery_step_phone)
+# ================== RUN ==================
 
-def delivery_step_phone(message):
-    chat_id = message.chat.id
-    phone = message.text.strip()
-    if len(re.sub(r'\D', '', phone)) >= 9:
-        user_data[chat_id]["phone"] = phone
-        bot.send_message(chat_id, "✅ Фармоиш қабул шуд!")
-        if DELIVERY_GROUP_ID:
-            bot.send_message(DELIVERY_GROUP_ID, f"📦 Нав: {user_data[chat_id]['name']}\n📞 {phone}")
-        send_main_menu(chat_id)
-    else:
-        msg = bot.send_message(chat_id, "❌ Хато! Рақамро дуруст нависед:")
-        bot.register_next_step_handler(msg, delivery_step_phone)
+print("БОТ ЗАПУЩЕН")
 
-# Ин қисм барои тугмаи "Гирифтани адрес" муҳим аст
-def address_step_name(message):
-    chat_id = message.chat.id
-    if chat_id not in user_data: user_data[chat_id] = {}
-    user_data[chat_id]["name"] = message.text.strip()
-    msg = bot.send_message(chat_id, "📞 Акнун рақами телефони худро ворид кунед (9 рақам):")
-    bot.register_next_step_handler(msg, address_step_phone)
-
-def address_step_phone(message):
-    chat_id = message.chat.id
-    phone = message.text.strip()
-    clean_phone = re.sub(r'\D', '', phone)[-9:]
-    
-    if len(clean_phone) < 9:
-        msg = bot.send_message(chat_id, "❌ Хато! 9 рақам ворид кунед:")
-        bot.register_next_step_handler(msg, address_step_phone)
-        return
-
-    user_data[chat_id]["phone"] = clean_phone
-    data = user_data[chat_id]
-    dtype = data.get('delivery_type', 'Заминӣ')
-
-    if "АВИА" in dtype:
-        c_name, c_phone, c_prov, c_city, c_addr = f"SAM {data['name']}", "17813714041", "北京市", "通州区", f"葛布店南里5号楼151 {data['name']} {clean_phone}"
-    else:
-        c_name, c_phone, c_prov, c_city, c_addr = data['name'], "17590820846", "浙江省", "金华市 / 义乌市", f"福田三小区80栋二单元305室 {data['name']} {clean_phone}"
-    
-    smart_paste = f"{c_name}，{c_phone}，{c_prov} {c_city} {c_addr}"
-    res = f"🇨🇳 **Адреси Шумо {dtype}:**\n👤 **收货人:** `{c_name}`\n📞 **手机:** `{c_phone}`\n📍 **地区:** `{c_prov} {c_city}`\n🏠 **地址:** `{c_addr}`\n\n **\n`{smart_paste}`"
-    
-    bot.send_message(chat_id, res, parse_mode="Markdown")
-    send_main_menu(chat_id)
-
-def show_contacts(chat_id):
-    text = "📞 *Барои тамос:* "
-    markup = types.InlineKeyboardMarkup(row_width=1)
-    markup.add(types.InlineKeyboardButton("📱 Менеҷер: +992 933 055 707", url="https://t.me/zubaidullo_tjk"))
-    markup.add(types.InlineKeyboardButton("📱 Менеҷер: +992 007 282 626", url="https://t.me/Fayoz_7707"))
-    bot.send_message(chat_id, text, reply_markup=markup, parse_mode="Markdown")
-
-def show_about_us(chat_id):
-    text = "🌐 *Шабакаҳои иҷтимоии мо:*"
-    markup = types.InlineKeyboardMarkup(row_width=1)
-    markup.add(types.InlineKeyboardButton("📢 Telegram", url="https://t.me/TAJEXPRESSCARGO"))
-    markup.add(types.InlineKeyboardButton("📸 Instagram", url="https://www.instagram.com/taj_express01"))
-    bot.send_message(chat_id, text, reply_markup=markup, parse_mode="Markdown")
-# ================== Запуск бота ==================
-if __name__ == "__main__":
-    print("Бот запущен...")
-    bot.infinity_polling()
+bot.infinity_polling()
