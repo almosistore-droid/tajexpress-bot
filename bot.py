@@ -372,7 +372,7 @@ def address_step_phone(message):
         f"📞 手机: `{c_phone}`\n"
         f"📍 地区: `{c_prov} {c_city}`\n"
         f"🏠 地址: `{c_addr}`\n\n"
-        f"📋 *Барои копирования:*\n"
+        f"📋 *Барои гирифтани адрес пурра:*\n"
         f"```\n{smart}\n```"
     )
 
