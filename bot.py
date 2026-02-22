@@ -312,7 +312,7 @@ def show_about_us(chat_id):
     text = "🌐 *Шабакаҳои иҷтимоии мо:*"
     markup = types.InlineKeyboardMarkup(row_width=1)
     markup.add(types.InlineKeyboardButton("📢 Telegram", url="https://t.me/TAJEXPRESSCARGO"))
-    markup.add(types.InlineKeyboardButton("📸 Instagram", url="https://www.instagram.com/taj_express01"))
+    markup.add(types.InlineKeyboardButton("📸 Instagram", url="https://www.instagram.com/taj_expressofficial"))
     bot.send_message(chat_id, text, reply_markup=markup, parse_mode="Markdown")
 # ================== Запуск бота ==================
 if __name__ == "__main__":
