@@ -32,6 +32,20 @@ CITY_LIST = {
 
 }
 
+# ================== TJ ADDRESS ==================
+
+TJ_ADDRESS = {
+
+    "tj_dushanbe":
+        "🏢 Душанбе\n📍 103 мкр, бинои 34\n⏰ 10:00 - 16:00",
+
+    "tj_bokhtar":
+        "🏢 Бохтар\n📍 Шабчарог кучаи кайхонавардон 34(Пушти мактаби 12)\n⏰ 10:00 - 16:00",
+
+    "tj_jabbor":
+        "🏢 Чаббор Расулов\n📍 Гулакандоз, Мамашариф Ерматов 17а\n⏰ 10:00 - 16:00"
+
+}
 # ================== Меню ==================
 BTN_DELIVERY = "🚚 Доставка"
 BTN_ADDRESS = "🇨🇳 Гирифтани адрес ва код"
@@ -158,7 +172,19 @@ def handle_address_type_callback(call):
     bot.send_message(chat_id,
                      "📍 Шаҳрро интихоб кунед:",
                      reply_markup=markup)
+# ================== TJ CALLBACK ==================
 
+@bot.callback_query_handler(func=lambda call: call.data.startswith("tj_"))
+def tj_address_callback(call):
+
+    chat_id = call.message.chat.id
+
+    address = TJ_ADDRESS.get(call.data)
+
+    bot.send_message(
+        chat_id,
+        address
+    )
 
 # ================== CITY ==================
 
@@ -261,7 +287,33 @@ def main_handler(message):
         bot.send_message(chat_id, "🔍 Барои тафтиши код ба канал ворид шавед.", reply_markup=markup)
         
     elif text == BTN_DUSHANBE:
-        bot.send_message(chat_id, "🏢 *Адрес Душанбе:* 103 мкр, бинои 34. ⏰ 9:00 - 18:00", parse_mode="Markdown")
+
+    markup = types.InlineKeyboardMarkup()
+
+    markup.add(
+
+        types.InlineKeyboardButton(
+            "🏢 Душанбе",
+            callback_data="tj_dushanbe"
+        ),
+
+        types.InlineKeyboardButton(
+            "🏢 Бохтар",
+            callback_data="tj_bokhtar"
+        ),
+
+        types.InlineKeyboardButton(
+            "🏢 Чаббор Расулов",
+            callback_data="tj_jabbor"
+        )
+
+    )
+
+    bot.send_message(
+        chat_id,
+        "📍 Шаҳрро интихоб кунед:",
+        reply_markup=markup
+    )
         
     elif text == BTN_BANNED:
         bot.send_message(chat_id,
