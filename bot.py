@@ -24,6 +24,13 @@ bot = TeleBot(TOKEN, threaded=False)
 
 # ================== Данные пользователей и кэш ==================
 user_data = {}
+CITY_LIST = {
+
+    "city_dushanbe": "DUSHANBE",
+    "city_bokhtar": "BOKHTAR",
+    "city_jabbor": "JABBOR RASULOV"
+
+}
 
 # ================== Меню ==================
 BTN_DELIVERY = "🚚 Доставка"
@@ -114,19 +121,61 @@ def choose_delivery_type(chat_id):
     )
     bot.send_message(chat_id, text, reply_markup=markup, parse_mode="Markdown")
 
-@bot.callback_query_handler(func=lambda call: call.data.startswith('address_type_'))
+@bot.callback_query_handler(func=lambda call:
+call.data.startswith("address_type_"))
 def handle_address_type_callback(call):
+
     chat_id = call.message.chat.id
+
     try:
-        bot.edit_message_reply_markup(chat_id, call.message.message_id, reply_markup=None)
-    except ApiTelegramException:
-        pass 
 
-    delivery_type = "Интиқоли ҳавоӣ (АВИА)" if call.data == "address_type_avia" else "Интиқоли заминӣ"
-    user_data[chat_id] = {"delivery_type": delivery_type}
-    msg = bot.send_message(chat_id, "🇨🇳 Лутфан, номи худро **ТАНҲО бо ҳарфҳои лотинӣ** ворид кунед:")
-    bot.register_next_step_handler(msg, address_step_name)
+        bot.edit_message_reply_markup(chat_id,
+                                      call.message.message_id,
+                                      reply_markup=None)
+    except:
+        pass
 
+    user_data[chat_id] = {
+
+        "delivery_type": call.data
+
+    }
+
+    markup = types.InlineKeyboardMarkup()
+
+    markup.add(
+
+        types.InlineKeyboardButton("🏢 Dushanbe",
+                                   callback_data="city_dushanbe"),
+
+        types.InlineKeyboardButton("🏢 Bokhtar",
+                                   callback_data="city_bokhtar"),
+
+        types.InlineKeyboardButton("🏢 Jabbor Rasulov",
+                                   callback_data="city_jabbor")
+    )
+
+    bot.send_message(chat_id,
+                     "📍 Шаҳрро интихоб кунед:",
+                     reply_markup=markup)
+
+
+# ================== CITY ==================
+
+@bot.callback_query_handler(func=lambda call:
+call.data.startswith("city_"))
+def city_callback(call):
+
+    chat_id = call.message.chat.id
+
+    city = CITY_LIST.get(call.data)
+
+    user_data[chat_id]["city"] = city
+
+    msg = bot.send_message(chat_id,
+                           "🇨🇳 Номро бо лотин ворид кунед:")
+
+    bot.register_next_step_handler(msg,address_step_name)
 # >>>>>>>>>>>>>>> FIX START (ЕДИНСТВЕННОЕ ИСПРАВЛЕНИЕ)
 def address_step_name(message):
     chat_id = message.chat.id
@@ -276,28 +325,63 @@ def address_step_name(message):
     bot.register_next_step_handler(msg, address_step_phone)
 
 def address_step_phone(message):
+
     chat_id = message.chat.id
-    phone = message.text.strip()
-    clean_phone = re.sub(r'\D', '', phone)[-9:]
-    
-    if len(clean_phone) < 9:
-        msg = bot.send_message(chat_id, "❌ Хато! 9 рақам ворид кунед:")
-        bot.register_next_step_handler(msg, address_step_phone)
-        return
 
-    user_data[chat_id]["phone"] = clean_phone
+    clean_phone = re.sub(r'\D','',message.text)[-9:]
+
     data = user_data[chat_id]
-    dtype = data.get('delivery_type', 'Заминӣ')
 
-    if "АВИА" in dtype:
-        c_name, c_phone, c_prov, c_city, c_addr = f"SAM {data['name']}", "17813714041", "北京市", "通州区", f"葛布店南里5号楼151 {data['name']} {clean_phone}"
+    city = data.get("city","")
+
+    if data.get("delivery_type")=="address_type_avia":
+
+        c_name=f"SAM {city} {data['name']}"
+
+        c_phone="17813714041"
+
+        c_prov="北京市"
+
+        c_city="通州区"
+
+        c_addr=f"葛布店南里5号楼151 {city} {data['name']} {clean_phone}"
+
+        dtype="АВИА"
+
     else:
-        c_name, c_phone, c_prov, c_city, c_addr = data['name'], "17590820846", "浙江省", "金华市 / 义乌市", f"福田三小区80栋二单元305室 {data['name']} {clean_phone}"
-    
-    smart_paste = f"{c_name}，{c_phone}，{c_prov} {c_city} {c_addr}"
-    res = f"🇨🇳 **Адреси Шумо {dtype}:**\n👤 **收货人:** `{c_name}`\n📞 **手机:** `{c_phone}`\n📍 **地区:** `{c_prov} {c_city}`\n🏠 **地址:** `{c_addr}`\n\n **\n`{smart_paste}`"
-    
-    bot.send_message(chat_id, res, parse_mode="Markdown")
+
+        c_name=f"{city} {data['name']}"
+
+        c_phone="17590820846"
+
+        c_prov="浙江省"
+
+        c_city="金华市 / 义乌市"
+
+        c_addr=f"福田三小区80栋二单元305室 {city} {data['name']} {clean_phone}"
+
+        dtype="Заминӣ"
+
+
+    smart = f"{c_name}，{c_phone}，{c_prov} {c_city} {c_addr}"
+
+
+    text=f"""🇨🇳 Адреси Шумо ({dtype}):
+
+👤 收货人: {c_name}
+
+📞 手机: {c_phone}
+
+📍 地区: {c_prov} {c_city}
+
+🏠 地址: {c_addr}
+
+
+{smart}
+"""
+
+    bot.send_message(chat_id,text)
+
     send_main_menu(chat_id)
 
 def show_contacts(chat_id):
