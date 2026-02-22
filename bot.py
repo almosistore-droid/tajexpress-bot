@@ -363,23 +363,26 @@ def address_step_phone(message):
         dtype="Заминӣ"
 
 
-smart = f"{c_name}，{c_phone}，{c_prov} {c_city} {c_addr}"
+    smart = f"{c_name}，{c_phone}，{c_prov} {c_city} {c_addr}"
 
-text = (
-    f"🇨🇳 *Адреси Шумо ({dtype}):*\n\n"
-    f"👤 收货人: `{c_name}`\n"
-    f"📞 手机: `{c_phone}`\n"
-    f"📍 地区: `{c_prov} {c_city}`\n"
-    f"🏠 地址: `{c_addr}`\n\n"
-    f"📋 *Барои копирования:*\n"
-    f"```\n{smart}\n```"
-)
 
-bot.send_message(
-    chat_id,
-    text,
-    parse_mode="Markdown"
-)
+    text = (
+        f"🇨🇳 *Адреси Шумо ({dtype}):*\n\n"
+        f"👤 收货人: `{c_name}`\n"
+        f"📞 手机: `{c_phone}`\n"
+        f"📍 地区: `{c_prov} {c_city}`\n"
+        f"🏠 地址: `{c_addr}`\n\n"
+        f"📋 *Барои копирования:*\n"
+        f"```\n{smart}\n```"
+    )
+
+
+    bot.send_message(
+        chat_id,
+        text,
+        parse_mode="Markdown"
+    )
+
 
     send_main_menu(chat_id)
 
