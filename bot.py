@@ -287,24 +287,21 @@ def main_handler(message):
         bot.send_message(chat_id, "🔍 Барои тафтиши код ба канал ворид шавед.", reply_markup=markup)
         
     elif text == BTN_DUSHANBE:
-
-    markup = types.InlineKeyboardMarkup()
-
-    markup.add(
-
-        types.InlineKeyboardButton(
-            "🏢 Душанбе",
-            callback_data="tj_dushanbe"
+        markup = types.InlineKeyboardMarkup()
+        markup.add(
+            types.InlineKeyboardButton(
+                "🏢 Душанбе",
+                callback_data="tj_dushanbe"
         ),
 
-        types.InlineKeyboardButton(
-            "🏢 Бохтар",
-            callback_data="tj_bokhtar"
+            types.InlineKeyboardButton(
+                "🏢 Бохтар",
+                callback_data="tj_bokhtar"
         ),
 
-        types.InlineKeyboardButton(
-            "🏢 Чаббор Расулов",
-            callback_data="tj_jabbor"
+            types.InlineKeyboardButton(
+                "🏢 Чаббор Расулов",
+                callback_data="tj_jabbor"
         )
 
     )
