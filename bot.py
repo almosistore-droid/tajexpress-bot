@@ -303,9 +303,9 @@ def address_step_phone(message):
 def show_contacts(chat_id):
     text = "📞 *Барои тамос:* "
     markup = types.InlineKeyboardMarkup(row_width=1)
-    markup.add(types.InlineKeyboardButton("📱 Менеҷер Dushanbe: +992 985 171 732", url="https://t.me/zubaidullo_tjk"))
-    markup.add(types.InlineKeyboardButton("📱 Менеҷер Bokhtar: +992 978 346 969", url="https://t.me/suhrob_hamidov13"))
-    markup.add(types.InlineKeyboardButton("📱 Менеҷер Jabbor Rasulov: +992 988 971 712"))
+    markup.add(types.InlineKeyboardButton("📱 Менеҷер Dushanbe: +992 985171732", url="https://t.me/zubaidullo_tjk"))
+    markup.add(types.InlineKeyboardButton("📱 Менеҷер Bokhtar: +992 978346969", url="https://t.me/suhrob_hamidov13"))
+    markup.add(types.InlineKeyboardButton("📱 Менеҷер Dushanbe: +992 988971712", url="https://t.me/zubaidullo_tjk"))
     bot.send_message(chat_id, text, reply_markup=markup, parse_mode="Markdown")
 
 def show_about_us(chat_id):
