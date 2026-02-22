@@ -287,8 +287,11 @@ def main_handler(message):
         bot.send_message(chat_id, "🔍 Барои тафтиши код ба канал ворид шавед.", reply_markup=markup)
         
     elif text == BTN_DUSHANBE:
+
         markup = types.InlineKeyboardMarkup()
+
         markup.add(
+
             types.InlineKeyboardButton(
                 "🏢 Душанбе",
                 callback_data="tj_dushanbe"
@@ -306,10 +309,10 @@ def main_handler(message):
 
     )
 
-    bot.send_message(
-        chat_id,
-        "📍 Шаҳрро интихоб кунед:",
-        reply_markup=markup
+        bot.send_message(
+            chat_id,
+            "📍 Шаҳрро интихоб кунед:",
+            reply_markup=markup
     )
         
     elif text == BTN_BANNED:
@@ -364,14 +367,6 @@ def delivery_step_phone(message):
     else:
         msg = bot.send_message(chat_id, "❌ Хато! Рақамро дуруст нависед:")
         bot.register_next_step_handler(msg, delivery_step_phone)
-
-# Ин қисм барои тугмаи "Гирифтани адрес" муҳим аст
-def address_step_name(message):
-    chat_id = message.chat.id
-    if chat_id not in user_data: user_data[chat_id] = {}
-    user_data[chat_id]["name"] = message.text.strip()
-    msg = bot.send_message(chat_id, "📞 Акнун рақами телефони худро ворид кунед (9 рақам):")
-    bot.register_next_step_handler(msg, address_step_phone)
 
 def address_step_phone(message):
 
