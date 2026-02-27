@@ -1,4 +1,4 @@
-import os
+мсапиаечпкрт нгллороапоррimport os
 import re
 from telebot import TeleBot, types
 from telebot.apihelper import ApiTelegramException
@@ -49,7 +49,7 @@ TJ_ADDRESS = {
 # ================== Меню ==================
 BTN_DELIVERY = "🚚 Доставка"
 BTN_ADDRESS = "🇨🇳 Гирифтани адрес ва код"
-BTN_DUSHANBE = "🇹🇯 Адрес Душанбе"
+BTN_DUSHANBE = "🇹🇯 Адрес Точикистон"
 BTN_PRICE_LIST = "📦 Нархнома"
 BTN_TRACK = "🔍 Проверка трек-кода"
 BTN_BANNED = "🚫 Молхои манъшуда"
@@ -435,7 +435,7 @@ def show_contacts(chat_id):
     markup = types.InlineKeyboardMarkup(row_width=1)
     markup.add(types.InlineKeyboardButton("📱 Менеҷер Dushanbe: +992 985171732", url="https://t.me/zubaidullo_tjk"))
     markup.add(types.InlineKeyboardButton("📱 Менеҷер Bokhtar: +992 978346969", url="https://t.me/suhrob_hamidov13"))
-    markup.add(types.InlineKeyboardButton("📱 Менеҷер Dushanbe: +992 988971712", url="https://t.me/zubaidullo_tjk"))
+    markup.add(types.InlineKeyboardButton("📱 Менеҷер Jabbor Rasulov: +992 989840001", url="https://t.me/tajexpress_jabborrasulov"))
     bot.send_message(chat_id, text, reply_markup=markup, parse_mode="Markdown")
 
 def show_about_us(chat_id):
