@@ -1,4 +1,4 @@
-мсапиаечпкрт нгллороапоррimport os
+import os
 import re
 from telebot import TeleBot, types
 from telebot.apihelper import ApiTelegramException
